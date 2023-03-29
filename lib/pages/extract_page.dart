@@ -9,13 +9,16 @@ class ExportPage extends StatefulWidget {
 }
 
 class _ExportPageState extends State<ExportPage> {
+
+  final ValueNotifier<String> rootDirectoryPath = ValueNotifier("");
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
         children: [
-          FolderSelectionUnit()
+          FolderSelectionUnit(rootDirectoryPath: rootDirectoryPath),
         ],
       ),
     );

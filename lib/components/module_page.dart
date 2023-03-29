@@ -26,7 +26,11 @@ class _ModulePageState extends State<ModulePage> {
       child: AnimatedBuilder(
         animation: widget.pageIndex,
         builder: (BuildContext context, Widget? child) {
-          return widget.pages[widget.pageIndex.value];
+          return Row(
+            children: [
+              Expanded(child: widget.pages[widget.pageIndex.value]),
+            ],
+          );
         },
       ),
     );
@@ -35,64 +39,60 @@ class _ModulePageState extends State<ModulePage> {
 
 class FolderSelectionUnit extends StatelessWidget {
   
-  FolderSelectionUnit({super.key});
+  FolderSelectionUnit({super.key, required this.rootDirectoryPath});
+
+  final ValueNotifier<String> rootDirectoryPath;
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15)
-            ),
-            margin: const EdgeInsets.all(10),
-            elevation: 5,
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Select folder",
-                    style: TextStyle(
-                      inherit: true,
-                      fontSize: 30
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Text("Folder path"),
-                      Expanded(child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                        child: TextField(
-                          controller: _controller,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(20)),
-                            ),
-                            prefixIcon: IconButton(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              icon: const Icon(Icons.folder),
-                              enableFeedback: true,
-                              hoverColor: Colors.transparent,
-                              splashColor: Colors.transparent,
-                              onPressed: selectDirectory,
-                            )
-                          ),
-                          
-                        ),
-                      )),
-                    ],
-                  )
-                ],
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15)
+      ),
+      margin: const EdgeInsets.all(10),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Select folder",
+              style: TextStyle(
+                inherit: true,
+                fontSize: 30
               ),
             ),
-          ),
+            Row(
+              children: [
+                const Text("Folder path"),
+                Expanded(child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                  child: TextField(
+                    controller: _controller,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                      ),
+                      prefixIcon: IconButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        icon: const Icon(Icons.folder),
+                        enableFeedback: true,
+                        hoverColor: Colors.transparent,
+                        splashColor: Colors.transparent,
+                        onPressed: selectDirectory,
+                      )
+                    ),
+                    
+                  ),
+                )),
+              ],
+            )
+          ],
         ),
-      ],
+      ),
     );
   }
 
