@@ -103,3 +103,88 @@ class FolderSelectionUnit extends StatelessWidget {
     }
   }
 }
+
+class FilterDirectoryUnit extends StatefulWidget {
+  const FilterDirectoryUnit({super.key, required this.rootDirectoryPath});
+
+  final ValueNotifier<String> rootDirectoryPath;
+
+  @override
+  State<FilterDirectoryUnit> createState() => _FilterDirectoryUnitState();
+}
+
+class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
+
+  int filterModeIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15)
+      ),
+      margin: const EdgeInsets.all(10),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Text(
+                  "Filter folder",
+                  style: TextStyle(
+                    inherit: true,
+                    fontSize: 30
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 100,
+                  child: DropdownButton(
+                    isExpanded: true,
+                    underline: const SizedBox.shrink(),
+                    value: filterModeIndex,
+                    alignment: Alignment.center,
+                    borderRadius: BorderRadius.circular(20),
+                    style: const TextStyle(
+                      inherit: true,
+                      fontSize: 13,
+                      color: Colors.black,
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
+                      DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
+                      DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
+                    ],
+                    onChanged: (filterMode) {
+                      if (filterMode != null) {
+                        setState(() => filterModeIndex = filterMode);
+                      }
+                    }
+
+                  ),
+                )
+              ],
+            ),
+            Text(filterModeIndex.toString())
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FilterDirectoryByNameSubUnit extends StatefulWidget {
+  const FilterDirectoryByNameSubUnit({super.key});
+
+  @override
+  State<FilterDirectoryByNameSubUnit> createState() => _FilterDirectoryByNameSubUnitState();
+}
+
+class _FilterDirectoryByNameSubUnitState extends State<FilterDirectoryByNameSubUnit> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}

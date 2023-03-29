@@ -19,6 +19,7 @@ class _ExportPageState extends State<ExportPage> {
       child: Column(
         children: [
           FolderSelectionUnit(rootDirectoryPath: rootDirectoryPath),
+          FilterDirectoryUnit(rootDirectoryPath: rootDirectoryPath)
         ],
       ),
     );
