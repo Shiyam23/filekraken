@@ -259,9 +259,13 @@ class FilterDirectoryNone extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<RootDirectoriesCubit, RootDirectoriesState>(
       builder: (context, state) {
-        if (state is RootDirectoriesLoading) {
+        if (state is RootDirectoriesWaitingForInput) {
+          return const Text("Waiting for directory input");
+        } 
+        else if (state is RootDirectoriesLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is RootDirectoriesLoadedState) {
+        } 
+        else if (state is RootDirectoriesLoadedState) {
           return ListView(
             shrinkWrap: true,
             children: state.directories.map((e) => ListTile(
