@@ -157,28 +157,31 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
                 ),
                 const Spacer(),
                 SizedBox(
-                  width: 100,
-                  child: DropdownButton(
-                    isExpanded: true,
-                    underline: const SizedBox.shrink(),
-                    value: filterModeIndex,
-                    alignment: Alignment.center,
-                    borderRadius: BorderRadius.circular(20),
-                    style: const TextStyle(
-                      inherit: true,
-                      fontSize: 13,
-                      color: Colors.black,
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
-                      DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
-                      DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
-                    ],
-                    onChanged: (filterMode) {
-                      if (filterMode != null) {
-                        setState(() => filterModeIndex = filterMode);
+                  width: 130,
+                  child: ButtonTheme(
+                    alignedDropdown: true,
+                    child: DropdownButton(
+                      isExpanded: true,
+                      underline: const SizedBox.shrink(),
+                      value: filterModeIndex,
+                      alignment: Alignment.center,
+                      borderRadius: BorderRadius.circular(20),
+                      style: const TextStyle(
+                        inherit: true,
+                        fontSize: 13,
+                        color: Colors.black,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
+                        DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
+                        DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
+                      ],
+                      onChanged: (filterMode) {
+                        if (filterMode != null) {
+                          setState(() => filterModeIndex = filterMode);
+                        }
                       }
-                    }
+                    ),
                   ),
                 )
               ],
@@ -259,17 +262,14 @@ class FilterDirectoryNone extends StatelessWidget {
         if (state is RootDirectoriesLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is RootDirectoriesLoadedState) {
-          return SizedBox(
-            height: 500,
-            child: ListView(
-              shrinkWrap: true,
-              children: state.directories.map((e) => ListTile(
-                title: Text(
-                  e.toString(),
-                  overflow: TextOverflow.fade,
-                ),
-              )).toList(),
-            ),
+          return ListView(
+            shrinkWrap: true,
+            children: state.directories.map((e) => ListTile(
+              title: Text(
+                e.toString(),
+                overflow: TextOverflow.fade,
+              ),
+            )).toList(),
           );
         } else {
           return const Text("Something went wrong!");
