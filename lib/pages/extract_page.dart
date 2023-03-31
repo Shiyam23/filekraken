@@ -14,14 +14,11 @@ class _ExportPageState extends State<ExportPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Column(
-        children: [
-          FolderSelectionUnit(rootDirectoryPath: rootDirectoryPath),
-          FilterDirectoryUnit(rootDirectoryPath: rootDirectoryPath)
-        ],
-      ),
+    return Column(
+      children: [
+        FolderSelectionUnit(rootDirectoryPath: rootDirectoryPath),
+        FilterDirectoryUnit(rootDirectoryPath: rootDirectoryPath)
+      ],
     );
   }
 }

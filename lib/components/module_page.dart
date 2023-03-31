@@ -1,13 +1,16 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:filekraken/bloc/cubit/cubit/root_directories_cubit.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/inject_page.dart';
 import 'package:flutter/material.dart';
 import '../pages/rename_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ModulePage extends StatefulWidget {
   
-  ModulePage({super.key, required this.pageIndex});
+  ModulePage({super.key, required this.pageIndex, required this.titleBarHeight});
 
+  final double titleBarHeight;
   final ValueNotifier pageIndex;
   final List<Widget> pages = [
     const ExportPage(),
@@ -28,7 +31,14 @@ class _ModulePageState extends State<ModulePage> {
         builder: (BuildContext context, Widget? child) {
           return Row(
             children: [
-              Expanded(child: widget.pages[widget.pageIndex.value]),
+              Expanded(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height - widget.titleBarHeight,
+                  child: SingleChildScrollView(
+                    child: widget.pages[widget.pageIndex.value]
+                  ),
+                )
+              ),
             ],
           );
         },
@@ -50,7 +60,7 @@ class FolderSelectionUnit extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15)
       ),
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(20),
       elevation: 5,
       child: Padding(
         padding: const EdgeInsets.all(15.0),
@@ -82,7 +92,7 @@ class FolderSelectionUnit extends StatelessWidget {
                         enableFeedback: true,
                         hoverColor: Colors.transparent,
                         splashColor: Colors.transparent,
-                        onPressed: selectDirectory,
+                        onPressed: () => selectDirectory(context),
                       )
                     ),
                     
@@ -96,10 +106,12 @@ class FolderSelectionUnit extends StatelessWidget {
     );
   }
 
-  void selectDirectory() async {
+  void selectDirectory(BuildContext context) async {
+    RootDirectoriesCubit cubit = BlocProvider.of<RootDirectoriesCubit>(context);
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       _controller.text = selectedDirectory.toString();
+      cubit.getDirectories(selectedDirectory);
     }
   }
 }
@@ -108,6 +120,11 @@ class FilterDirectoryUnit extends StatefulWidget {
   const FilterDirectoryUnit({super.key, required this.rootDirectoryPath});
 
   final ValueNotifier<String> rootDirectoryPath;
+  final List<Widget> subUnits = const [
+    FilterDirectoryNone(key: ValueKey(0)),
+    FilterDirectoryBySelection(key: ValueKey(1)),
+    FilterDirectoryByNameSubUnit(key: ValueKey(2))
+  ];
 
   @override
   State<FilterDirectoryUnit> createState() => _FilterDirectoryUnitState();
@@ -123,8 +140,8 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15)
       ),
-      margin: const EdgeInsets.all(10),
-      elevation: 5,
+      margin: const EdgeInsets.all(20),
+      elevation: 15,
       child: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Column(
@@ -162,12 +179,11 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
                         setState(() => filterModeIndex = filterMode);
                       }
                     }
-
                   ),
                 )
               ],
             ),
-            Text(filterModeIndex.toString())
+            widget.subUnits[filterModeIndex]
           ],
         ),
       ),
@@ -186,5 +202,79 @@ class _FilterDirectoryByNameSubUnitState extends State<FilterDirectoryByNameSubU
   @override
   Widget build(BuildContext context) {
     return Container();
+  }
+}
+
+class FilterDirectoryBySelection extends StatefulWidget {
+  
+  const FilterDirectoryBySelection({super.key});
+
+  @override
+  State<FilterDirectoryBySelection> createState() => _FilterDirectoryBySelectionState();
+}
+
+class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection> {
+  
+  Map<String, bool> directorySelection = {};
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<RootDirectoriesCubit, RootDirectoriesState>(
+      builder: (context, state) {
+        if (state is RootDirectoriesLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is RootDirectoriesLoadedState) {
+          for (String path in state.directories) {
+            directorySelection[path] = false;
+          }
+          return ListView(
+            shrinkWrap: true,
+            children: state.directories.map((e) => ListTile(
+              leading: StatefulBuilder(
+                builder: (context, checkBoXSetState) {
+                  return Checkbox(
+                    value: directorySelection[e],
+                    onChanged: (value) => checkBoXSetState(() => directorySelection[e] = value!),
+                  );
+                }
+              ),
+              title: Text(e.toString()),
+            )).toList(),
+          );
+        } else {
+          return const Text("Something went wrong!");
+        }
+      },
+    );
+  }
+}
+
+class FilterDirectoryNone extends StatelessWidget {
+  const FilterDirectoryNone({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<RootDirectoriesCubit, RootDirectoriesState>(
+      builder: (context, state) {
+        if (state is RootDirectoriesLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is RootDirectoriesLoadedState) {
+          return SizedBox(
+            height: 500,
+            child: ListView(
+              shrinkWrap: true,
+              children: state.directories.map((e) => ListTile(
+                title: Text(
+                  e.toString(),
+                  overflow: TextOverflow.fade,
+                ),
+              )).toList(),
+            ),
+          );
+        } else {
+          return const Text("Something went wrong!");
+        }
+      },
+    );
   }
 }
