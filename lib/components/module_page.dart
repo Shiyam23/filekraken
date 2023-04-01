@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
-import 'package:filekraken/bloc/cubit/cubit/root_directories_cubit.dart';
+import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/inject_page.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +51,10 @@ class _ModulePageState extends State<ModulePage> {
 
 class FolderSelectionUnit extends StatelessWidget {
   
-  FolderSelectionUnit({super.key, required this.rootDirectoryPath});
+  FolderSelectionUnit({super.key, required this.onDirectorySelect});
 
-  final ValueNotifier<String> rootDirectoryPath;
   final TextEditingController _controller = TextEditingController();
+  final void Function(String rootPath) onDirectorySelect;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +97,6 @@ class FolderSelectionUnit extends StatelessWidget {
                         onPressed: () => selectDirectory(context),
                       )
                     ),
-                    
                   ),
                 )),
               ],
@@ -107,23 +108,34 @@ class FolderSelectionUnit extends StatelessWidget {
   }
 
   void selectDirectory(BuildContext context) async {
-    RootDirectoriesCubit cubit = BlocProvider.of<RootDirectoriesCubit>(context);
+    FilterDirectoriesCubit cubit = BlocProvider.of<FilterDirectoriesCubit>(context);
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       _controller.text = selectedDirectory.toString();
-      cubit.getDirectories(selectedDirectory);
+      onDirectorySelect(_controller.text);
+      cubit.emitDirectories(selectedDirectory);
     }
   }
 }
 
 class FilterDirectoryUnit extends StatefulWidget {
-  const FilterDirectoryUnit({super.key, required this.rootDirectoryPath});
+  FilterDirectoryUnit({
+    super.key,
+    required this.onDirectorySelect,
+    required this.onFileRefresh
+  });
 
-  final ValueNotifier<String> rootDirectoryPath;
-  final List<Widget> subUnits = const [
-    FilterDirectoryNone(key: ValueKey(0)),
-    FilterDirectoryBySelection(key: ValueKey(1)),
-    FilterDirectoryByNameSubUnit(key: ValueKey(2))
+  final void Function(List<String> selectedDirectories) onDirectorySelect;
+  final void Function() onFileRefresh;
+
+  late final List<Widget> subUnits = [
+    FilterDirectoryNone(key: const ValueKey(0), onDirectorySelect: onDirectorySelect,),
+    FilterDirectoryBySelection(
+      key: const ValueKey(1), 
+      onDirectorySelect: onDirectorySelect,
+      onRefresh: onFileRefresh,
+    ),
+    FilterDirectoryByNameSubUnit(key: const ValueKey(2), onDirectorySelect: onDirectorySelect,)
   ];
 
   @override
@@ -177,7 +189,8 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
                         DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
                       ],
                       onChanged: (filterMode) {
-                        if (filterMode != null) {
+                        if (filterMode != null && filterModeIndex != filterMode) {
+                          widget.onFileRefresh();
                           setState(() => filterModeIndex = filterMode);
                         }
                       }
@@ -195,7 +208,12 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
 }
 
 class FilterDirectoryByNameSubUnit extends StatefulWidget {
-  const FilterDirectoryByNameSubUnit({super.key});
+  const FilterDirectoryByNameSubUnit({
+    super.key,
+    required this.onDirectorySelect
+  });
+
+  final void Function(List<String> selectedDirectories) onDirectorySelect;
 
   @override
   State<FilterDirectoryByNameSubUnit> createState() => _FilterDirectoryByNameSubUnitState();
@@ -210,7 +228,14 @@ class _FilterDirectoryByNameSubUnitState extends State<FilterDirectoryByNameSubU
 
 class FilterDirectoryBySelection extends StatefulWidget {
   
-  const FilterDirectoryBySelection({super.key});
+  const FilterDirectoryBySelection({
+    super.key,
+    required this.onDirectorySelect,
+    required this.onRefresh
+  });
+
+  final void Function(List<String> selectedDirectories) onDirectorySelect;
+  final void Function() onRefresh;
 
   @override
   State<FilterDirectoryBySelection> createState() => _FilterDirectoryBySelectionState();
@@ -219,25 +244,45 @@ class FilterDirectoryBySelection extends StatefulWidget {
 class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection> {
   
   Map<String, bool> directorySelection = {};
+  int selectedDirectories = 0;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RootDirectoriesCubit, RootDirectoriesState>(
+    return BlocConsumer<FilterDirectoriesCubit, FileEntityState>(
+      listener: (context, state) {
+        if (state is FileEntityLoadedState) {
+          widget.onDirectorySelect([]);
+        }
+      },
+      buildWhen: (previous, current) {
+        return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.directory);
+      },
       builder: (context, state) {
-        if (state is RootDirectoriesLoading) {
+        if (state is FileEntityLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is RootDirectoriesLoadedState) {
-          for (String path in state.directories) {
+        } else if (state is FileEntityLoadedState) {
+          for (String path in state.fileEntities) {
             directorySelection[path] = false;
           }
           return ListView(
             shrinkWrap: true,
-            children: state.directories.map((e) => ListTile(
+            children: state.fileEntities.map((e) => ListTile(
               leading: StatefulBuilder(
                 builder: (context, checkBoXSetState) {
                   return Checkbox(
                     value: directorySelection[e],
-                    onChanged: (value) => checkBoXSetState(() => directorySelection[e] = value!),
+                    onChanged: (value) {
+                      checkBoXSetState(() => directorySelection[e] = value!);
+                      widget.onDirectorySelect(
+                        directorySelection.keys
+                        .where((element) => directorySelection[element] == true)
+                        .toList()
+                      );
+                      selectedDirectories += value! ? 1 : -1;
+                      if (selectedDirectories <= 0) {
+                        widget.onRefresh();
+                      }
+                    },
                   );
                 }
               ),
@@ -253,22 +298,35 @@ class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection>
 }
 
 class FilterDirectoryNone extends StatelessWidget {
-  const FilterDirectoryNone({super.key});
+  const FilterDirectoryNone({
+    super.key,
+    required this.onDirectorySelect
+  });
+
+  final void Function(List<String> selectedDirectories) onDirectorySelect;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RootDirectoriesCubit, RootDirectoriesState>(
+    return BlocConsumer<FilterDirectoriesCubit, FileEntityState>(
+      listener: (context, state) {
+        if (state is FileEntityLoadedState) {
+          onDirectorySelect(state.fileEntities);
+        }
+      },
+      buildWhen: (previous, current) {
+        return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.directory);
+      },
       builder: (context, state) {
-        if (state is RootDirectoriesWaitingForInput) {
+        if (state is FileEntityWaitingForInput) {
           return const Text("Waiting for directory input");
         } 
-        else if (state is RootDirectoriesLoading) {
+        else if (state is FileEntityLoading) {
           return const Center(child: CircularProgressIndicator());
         } 
-        else if (state is RootDirectoriesLoadedState) {
+        else if (state is FileEntityLoadedState) {
           return ListView(
             shrinkWrap: true,
-            children: state.directories.map((e) => ListTile(
+            children: state.fileEntities.map((e) => ListTile(
               title: Text(
                 e.toString(),
                 overflow: TextOverflow.fade,
@@ -282,3 +340,100 @@ class FilterDirectoryNone extends StatelessWidget {
     );
   }
 }
+
+class FilterFileUnit extends StatefulWidget {
+  const FilterFileUnit({super.key});
+
+  @override
+  State<FilterFileUnit> createState() => _FilterFileUnitState();
+}
+
+class _FilterFileUnitState extends State<FilterFileUnit> {
+
+  int filterModeIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15)
+      ),
+      margin: const EdgeInsets.all(20),
+      elevation: 15,
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Text(
+                  "Filter files",
+                  style: TextStyle(
+                    inherit: true,
+                    fontSize: 30
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 130,
+                  child: ButtonTheme(
+                    alignedDropdown: true,
+                    child: DropdownButton(
+                      isExpanded: true,
+                      underline: const SizedBox.shrink(),
+                      value: filterModeIndex,
+                      alignment: Alignment.center,
+                      borderRadius: BorderRadius.circular(20),
+                      style: const TextStyle(
+                        inherit: true,
+                        fontSize: 13,
+                        color: Colors.black,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
+                        DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
+                        DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
+                      ],
+                      onChanged: (filterMode) {
+                        if (filterMode != null) {
+                          setState(() => filterModeIndex = filterMode);
+                        }
+                      }
+                    ),
+                  ),
+                )
+              ],
+            ),
+            BlocBuilder<FilterFilesCubit, FileEntityState>(
+              buildWhen: (previous, current) {
+                return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.file);
+              },
+              builder: (context, state) {
+                if (state is FileEntityWaitingForInput) {
+                  return const Text("Waiting for directory input");
+                } 
+                else if (state is FileEntityLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } 
+                else if (state is FileEntityLoadedState) {
+                  return ListView(
+                    shrinkWrap: true,
+                    children: state.fileEntities.map((e) => ListTile(
+                      title: Text(
+                        e.toString(),
+                        overflow: TextOverflow.fade,
+                      ),
+                    )).toList(),
+                  );
+                } else {
+                  return const Text("Something went wrong!");
+                }
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
