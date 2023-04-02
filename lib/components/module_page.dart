@@ -129,13 +129,16 @@ class FilterDirectoryUnit extends StatefulWidget {
   final void Function() onFileRefresh;
 
   late final List<Widget> subUnits = [
-    FilterDirectoryNone(key: const ValueKey(0), onDirectorySelect: onDirectorySelect,),
-    FilterDirectoryBySelection(
+    FilterNone<FilterDirectoriesCubit>(
+      key: const ValueKey(0), 
+      onEntitySelect: onDirectorySelect
+    ),
+    FilterBySelection<FilterDirectoriesCubit>(
       key: const ValueKey(1), 
-      onDirectorySelect: onDirectorySelect,
+      onEntitySelect: onDirectorySelect,
       onRefresh: onFileRefresh,
     ),
-    FilterDirectoryByNameSubUnit(key: const ValueKey(2), onDirectorySelect: onDirectorySelect,)
+    FilterByNameSubUnit<FilterDirectoriesCubit>(key: const ValueKey(2), onDirectorySelect: onDirectorySelect,)
   ];
 
   @override
@@ -207,8 +210,8 @@ class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
   }
 }
 
-class FilterDirectoryByNameSubUnit extends StatefulWidget {
-  const FilterDirectoryByNameSubUnit({
+class FilterByNameSubUnit<B extends Cubit<FileEntityState>> extends StatefulWidget {
+  const FilterByNameSubUnit({
     super.key,
     required this.onDirectorySelect
   });
@@ -216,46 +219,43 @@ class FilterDirectoryByNameSubUnit extends StatefulWidget {
   final void Function(List<String> selectedDirectories) onDirectorySelect;
 
   @override
-  State<FilterDirectoryByNameSubUnit> createState() => _FilterDirectoryByNameSubUnitState();
+  State<FilterByNameSubUnit> createState() => _FilterByNameSubUnitState<B>();
 }
 
-class _FilterDirectoryByNameSubUnitState extends State<FilterDirectoryByNameSubUnit> {
+class _FilterByNameSubUnitState<B extends Cubit<FileEntityState>> extends State<FilterByNameSubUnit> {
   @override
   Widget build(BuildContext context) {
     return Container();
   }
 }
 
-class FilterDirectoryBySelection extends StatefulWidget {
+class FilterBySelection<B extends Cubit<FileEntityState>> extends StatefulWidget {
   
-  const FilterDirectoryBySelection({
+  const FilterBySelection({
     super.key,
-    required this.onDirectorySelect,
-    required this.onRefresh
+    required this.onEntitySelect,
+    this.onRefresh
   });
 
-  final void Function(List<String> selectedDirectories) onDirectorySelect;
-  final void Function() onRefresh;
+  final void Function(List<String> selectedDirectories) onEntitySelect;
+  final void Function()? onRefresh;
 
   @override
-  State<FilterDirectoryBySelection> createState() => _FilterDirectoryBySelectionState();
+  State<FilterBySelection> createState() => _FilterBySelectionState<B>();
 }
 
-class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection> {
+class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<FilterBySelection> {
   
   Map<String, bool> directorySelection = {};
   int selectedDirectories = 0;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<FilterDirectoriesCubit, FileEntityState>(
+    return BlocConsumer<B, FileEntityState>(
       listener: (context, state) {
         if (state is FileEntityLoadedState) {
-          widget.onDirectorySelect([]);
+          widget.onEntitySelect([]);
         }
-      },
-      buildWhen: (previous, current) {
-        return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.directory);
       },
       builder: (context, state) {
         if (state is FileEntityLoading) {
@@ -273,14 +273,14 @@ class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection>
                     value: directorySelection[e],
                     onChanged: (value) {
                       checkBoXSetState(() => directorySelection[e] = value!);
-                      widget.onDirectorySelect(
+                      widget.onEntitySelect(
                         directorySelection.keys
                         .where((element) => directorySelection[element] == true)
                         .toList()
                       );
                       selectedDirectories += value! ? 1 : -1;
                       if (selectedDirectories <= 0) {
-                        widget.onRefresh();
+                        widget.onRefresh?.call();
                       }
                     },
                   );
@@ -297,24 +297,21 @@ class _FilterDirectoryBySelectionState extends State<FilterDirectoryBySelection>
   }
 }
 
-class FilterDirectoryNone extends StatelessWidget {
-  const FilterDirectoryNone({
+class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
+  const FilterNone({
     super.key,
-    required this.onDirectorySelect
+    required this.onEntitySelect
   });
 
-  final void Function(List<String> selectedDirectories) onDirectorySelect;
+  final void Function(List<String> selectedEntities) onEntitySelect;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<FilterDirectoriesCubit, FileEntityState>(
+    return BlocConsumer<B, FileEntityState>(
       listener: (context, state) {
         if (state is FileEntityLoadedState) {
-          onDirectorySelect(state.fileEntities);
+          onEntitySelect(state.fileEntities);
         }
-      },
-      buildWhen: (previous, current) {
-        return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.directory);
       },
       builder: (context, state) {
         if (state is FileEntityWaitingForInput) {
@@ -342,7 +339,25 @@ class FilterDirectoryNone extends StatelessWidget {
 }
 
 class FilterFileUnit extends StatefulWidget {
-  const FilterFileUnit({super.key});
+  FilterFileUnit({super.key, required this.onFileSelect});
+
+  final void Function(List<String> selectedFiles) onFileSelect;
+
+  late final List<Widget> subUnits = [
+    FilterNone<FilterFilesCubit>(
+      key: const ValueKey(0), 
+      onEntitySelect: onFileSelect
+    ),
+    FilterBySelection<FilterFilesCubit>(
+      key: const ValueKey(1), 
+      onEntitySelect: onFileSelect,
+    ),
+    FilterByNameSubUnit<FilterFilesCubit>(
+      key: const ValueKey(2), 
+      onDirectorySelect: onFileSelect
+    )
+  ];
+
 
   @override
   State<FilterFileUnit> createState() => _FilterFileUnitState();
@@ -395,7 +410,7 @@ class _FilterFileUnitState extends State<FilterFileUnit> {
                         DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
                       ],
                       onChanged: (filterMode) {
-                        if (filterMode != null) {
+                        if (filterMode != null && filterMode != filterModeIndex) {
                           setState(() => filterModeIndex = filterMode);
                         }
                       }
@@ -404,32 +419,7 @@ class _FilterFileUnitState extends State<FilterFileUnit> {
                 )
               ],
             ),
-            BlocBuilder<FilterFilesCubit, FileEntityState>(
-              buildWhen: (previous, current) {
-                return (current is! FileEntityLoadedState) || (current.type == FileSystemEntityType.file);
-              },
-              builder: (context, state) {
-                if (state is FileEntityWaitingForInput) {
-                  return const Text("Waiting for directory input");
-                } 
-                else if (state is FileEntityLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } 
-                else if (state is FileEntityLoadedState) {
-                  return ListView(
-                    shrinkWrap: true,
-                    children: state.fileEntities.map((e) => ListTile(
-                      title: Text(
-                        e.toString(),
-                        overflow: TextOverflow.fade,
-                      ),
-                    )).toList(),
-                  );
-                } else {
-                  return const Text("Something went wrong!");
-                }
-              },
-            )
+            widget.subUnits[filterModeIndex]
           ],
         ),
       ),

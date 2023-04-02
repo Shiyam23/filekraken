@@ -36,7 +36,9 @@ class _ExportPageState extends State<ExportPage> {
               onDirectorySelect: onDirectorySelect,
               onFileRefresh: refreshFiles,
             ),
-            const FilterFileUnit()
+            FilterFileUnit(
+              onFileSelect: onFileSelect,
+            )
           ],
         ),
     );
@@ -55,6 +57,10 @@ class _ExportPageState extends State<ExportPage> {
       List<String> directories = await _directoriesCubit.emitDirectories(rootPath!);
       _filesCubit.emitFiles(directories);
     }
+  }
+
+  void onFileSelect(List<String> selectedFiles) {
+    selectedFiles.forEach(print);
   }
 
   @override
