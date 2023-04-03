@@ -255,6 +255,7 @@ class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<Fi
       listener: (context, state) {
         if (state is FileEntityLoadedState) {
           widget.onEntitySelect([]);
+          directorySelection.clear();
         }
       },
       builder: (context, state) {
