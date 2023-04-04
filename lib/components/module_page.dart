@@ -267,6 +267,7 @@ class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<Fi
           }
           return ListView(
             shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
             children: state.fileEntities.map((e) => ListTile(
               leading: StatefulBuilder(
                 builder: (context, checkBoXSetState) {
@@ -324,6 +325,7 @@ class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
         else if (state is FileEntityLoadedState) {
           return ListView(
             shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
             children: state.fileEntities.map((e) => ListTile(
               title: Text(
                 e.toString(),
