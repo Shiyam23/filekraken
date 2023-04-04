@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +26,7 @@ class TitleBar extends StatelessWidget {
                 child: MoveWindow(
                   child: Container(
                     padding: const EdgeInsets.only(left: 15.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Platform.isMacOS ? Alignment.center : Alignment.centerLeft,
                     child: const Text(
                       "App", 
                       style: TextStyle(
