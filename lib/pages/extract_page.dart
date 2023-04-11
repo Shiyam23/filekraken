@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:path/path.dart' as path;
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,8 @@ class _ExportPageState extends State<ExportPage> {
 
   final FilterDirectoriesCubit _directoriesCubit = FilterDirectoriesCubit();
   final FilterFilesCubit _filesCubit = FilterFilesCubit();
-  String? rootPath;
+  String? _rootPath;
+  List<String>? _selectedFiles;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +41,10 @@ class _ExportPageState extends State<ExportPage> {
             ),
             FilterFileUnit(
               onFileSelect: onFileSelect,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(onPressed: moveFiles, child: Text("Move!")),
             )
           ],
         ),
@@ -45,7 +52,7 @@ class _ExportPageState extends State<ExportPage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    this.rootPath = rootPath;
+    _rootPath = rootPath;
   }
 
   void onDirectorySelect(List<String> directories) {
@@ -53,14 +60,28 @@ class _ExportPageState extends State<ExportPage> {
   }
 
   void refreshFiles() async {
-    if (rootPath != null) {
-      List<String> directories = await _directoriesCubit.emitDirectories(rootPath!);
+    if (_rootPath != null) {
+      List<String> directories = await _directoriesCubit.emitDirectories(_rootPath!);
       _filesCubit.emitFiles(directories);
     }
   }
 
   void onFileSelect(List<String> selectedFiles) {
-    selectedFiles.forEach(print);
+    _selectedFiles = selectedFiles;
+  }
+
+  void moveFiles() async {
+    if (_selectedFiles == null || _selectedFiles!.isEmpty) {
+      return;
+    }
+    for (String filePath in _selectedFiles!) {
+      File selectedFile = File(filePath);
+      if (_rootPath != null && await selectedFile.exists()) {
+        await selectedFile.rename(path.join(_rootPath!, path.basename(filePath)));
+      }
+    }
+    _selectedFiles?.clear();
+    refreshFiles();
   }
 
   @override
