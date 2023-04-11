@@ -5,14 +5,14 @@ import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ExportPage extends StatefulWidget {
-  const ExportPage({super.key});
+class ExtractPage extends StatefulWidget {
+  const ExtractPage({super.key});
 
   @override
-  State<ExportPage> createState() => _ExportPageState();
+  State<ExtractPage> createState() => _ExtractPageState();
 }
 
-class _ExportPageState extends State<ExportPage> {
+class _ExtractPageState extends State<ExtractPage> {
 
   final FilterDirectoriesCubit _directoriesCubit = FilterDirectoriesCubit();
   final FilterFilesCubit _filesCubit = FilterFilesCubit();

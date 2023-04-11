@@ -15,7 +15,7 @@ class ModulePage extends StatefulWidget {
   final double titleBarHeight;
   final ValueNotifier pageIndex;
   final List<Widget> pages = [
-    const ExportPage(),
+    const ExtractPage(),
     const InjectPage(),
     const RenamePage(),
   ];
