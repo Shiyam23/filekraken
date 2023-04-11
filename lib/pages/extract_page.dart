@@ -53,6 +53,7 @@ class _ExtractPageState extends State<ExtractPage> {
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
+    _directoriesCubit.emitDirectories(rootPath);
   }
 
   void onDirectorySelect(List<String> directories) {

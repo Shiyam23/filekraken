@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/inject_page.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import '../pages/rename_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -49,12 +48,18 @@ class _ModulePageState extends State<ModulePage> {
   }
 }
 
-class FolderSelectionUnit extends StatelessWidget {
+class FolderSelectionUnit extends StatefulWidget {
   
-  FolderSelectionUnit({super.key, required this.onDirectorySelect});
+  const FolderSelectionUnit({super.key, required this.onDirectorySelect});
 
-  final TextEditingController _controller = TextEditingController();
   final void Function(String rootPath) onDirectorySelect;
+
+  @override
+  State<FolderSelectionUnit> createState() => _FolderSelectionUnitState();
+}
+
+class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -108,13 +113,17 @@ class FolderSelectionUnit extends StatelessWidget {
   }
 
   void selectDirectory(BuildContext context) async {
-    FilterDirectoriesCubit cubit = BlocProvider.of<FilterDirectoriesCubit>(context);
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
-      _controller.text = selectedDirectory.toString();
-      onDirectorySelect(_controller.text);
-      cubit.emitDirectories(selectedDirectory);
+      _controller.text = selectedDirectory;
+      widget.onDirectorySelect(selectedDirectory);
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
 
@@ -223,9 +232,92 @@ class FilterByNameSubUnit<B extends Cubit<FileEntityState>> extends StatefulWidg
 }
 
 class _FilterByNameSubUnitState<B extends Cubit<FileEntityState>> extends State<FilterByNameSubUnit> {
+  
+  final TextEditingController _controller = TextEditingController();
+  int _dropDownButtonValue = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return BlocBuilder<B, FileEntityState>(
+      builder: (context, state) {
+        if (state is FileEntityLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is FileEntityWaitingForInput) {
+          return const Text("Waiting for input");
+        } else if (state is FileEntityLoadedState) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  DropdownButton(
+                    value: _dropDownButtonValue,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 0,
+                        child: Text("Contains"),
+                      ),
+                      DropdownMenuItem(
+                        value: 1,
+                        child: Text("Prefix"),
+                      ),
+                      DropdownMenuItem(
+                        value: 2,
+                        child: Text("Suffix"),
+                      ),
+                    ], 
+                    onChanged: (i) => setState(() {
+                      if (i != null && i != _dropDownButtonValue) {
+                        _dropDownButtonValue = i;
+                      }
+                    })
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => showDialog(
+                      context: context, 
+                      builder: (context) => SimpleDialog(
+                        children: filterByName(state.fileEntities, true)
+                        .map((e) => Text(e))
+                        .toList(),
+                      ),
+                    ), 
+                    icon: const Icon(Icons.info)
+                  )
+                ],
+              ),
+              TextButton(
+                child: const Text("Submit"),
+                onPressed: () => widget.onDirectorySelect(filterByName(state.fileEntities, false)),
+              )
+            ],
+          );
+        } else {
+          return const Text("Something went wrong");
+        }
+      },
+    );
+  }
+
+  List<String> filterByName(List<String> fileEntities, bool showOnlyBasename) {
+    return fileEntities
+    .map((e) => showOnlyBasename ? basename(e) : e)
+    .where((element) => basename(element).contains(_controller.text))
+    .toList();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
 
@@ -288,7 +380,7 @@ class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<Fi
                   );
                 }
               ),
-              title: Text(e.toString()),
+              title: Text(basename(e)),
             )).toList(),
           );
         } else {
@@ -327,10 +419,7 @@ class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
             children: state.fileEntities.map((e) => ListTile(
-              title: Text(
-                e.toString(),
-                overflow: TextOverflow.fade,
-              ),
+              title: Text(basename(e)),
             )).toList(),
           );
         } else {
