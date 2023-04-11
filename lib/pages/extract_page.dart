@@ -25,11 +25,9 @@ class _ExtractPageState extends State<ExtractPage> {
       providers: [
         BlocProvider.value(
           value: _directoriesCubit,
-          child: Container(),
         ),
         BlocProvider.value(
           value: _filesCubit,
-          child: Container(),
         ),
       ],
       child: Column(
