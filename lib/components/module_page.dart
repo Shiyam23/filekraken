@@ -4,6 +4,7 @@ import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/inject_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import '../model/modifer_parser.dart';
 import '../pages/rename_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -516,6 +517,224 @@ class _FilterFileUnitState extends State<FilterFileUnit> {
         ),
       ),
     );
+  }
+}
+
+class RenameFileUnit extends StatefulWidget {
+  
+  const RenameFileUnit({required this.config, super.key});
+
+  final PathModifierConfig config;
+
+  @override
+  State<RenameFileUnit> createState() => _RenameFileUnitState();
+}
+
+class _RenameFileUnitState extends State<RenameFileUnit> {
+
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+
+  String? _errorText;
+  int count = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15)
+      ),
+      margin: const EdgeInsets.all(20),
+      elevation: 15,
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Rename files",
+              style: TextStyle(
+                inherit: true,
+                fontSize: 30
+              ),
+            ),
+            Row(
+              children: [
+                const Text("Regular Expression"),
+                StatefulBuilder(
+                  builder: (BuildContext context, setState) {
+                    return Checkbox(
+                      value: widget.config.isRegex,
+                      onChanged: (value) {
+                        setState(() => widget.config.isRegex = value!);
+                      }
+                    );
+                  },
+                ),
+              ],
+            ),
+            AnimatedList(
+              key: _listKey,
+              shrinkWrap: true,
+              initialItemCount: count,
+              itemBuilder: (context, index, animation) => SizeTransition(
+                sizeFactor: animation,
+                child: Row(
+                  children: [
+                    Text("Match ${index+1}"),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 3,
+                      child: TextFormField(
+                        initialValue: widget.config.options[index].match,
+                        onChanged: (value) => widget.config.options[index].match = value,
+                        decoration: const InputDecoration(
+                          hintText: "(unmodified)",
+                          hintStyle: TextStyle(
+                            inherit: true,
+                            fontSize: 13
+                          )
+                        ),
+                      ),
+                    ),
+                    Text("Modifier ${index+1}"),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 3,
+                      child: TextFormField(
+                        initialValue: widget.config.options[index].modifier,
+                        onChanged: (value) => widget.config.options[index].modifier = value,
+                        decoration: const InputDecoration(
+                          hintText: "(unmodified)",
+                          hintStyle: TextStyle(
+                            inherit: true,
+                            fontSize: 13
+                          )
+                        ),
+                      ),
+                    ),
+                    Text("Order ${index+1}"),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      flex: 1,
+                      child: TextFormField(
+                        initialValue: widget.config.options[index].order?.toString(),
+                        validator: (value) {
+                          if (value == null) return null;
+                          return int.tryParse(value) == null ? "Zahl!" : null;
+                        },
+                        onChanged: (value) {
+                          widget.config.options[index].order = int.tryParse(value);
+                        },
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: const InputDecoration(
+                          hintText: "(unmodified)",
+                          hintStyle: TextStyle(
+                            inherit: true,
+                            fontSize: 13
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: index != 0 ? IconButton(
+                        onPressed: () => removeRow(index), 
+                        icon: const Icon(Icons.delete),
+                      ) : const SizedBox.shrink(),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(onPressed: addRow, child: const Text("Add"))
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? validatePathModifier(String? pathModifier) {
+    return _errorText;
+  }
+
+  void addRow() {
+    _listKey.currentState!.insertItem(count);
+    widget.config.options.add(PathModifierOptions(
+      order: count+1
+    ));
+    count++;
+  }
+
+  void removeRow(int index) {
+    _listKey.currentState!.removeItem(
+      index, 
+      (context, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: Row(
+          children: [
+            Text("Match ${index+1}"),
+            const SizedBox(width: 10),
+            const Expanded(
+              flex: 3,
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "(unmodified)",
+                  hintStyle: TextStyle(
+                    inherit: true,
+                    fontSize: 13
+                  )
+                ),
+              ),
+            ),
+            Text("Modifier ${index+1}"),
+            const SizedBox(width: 10),
+            const Expanded(
+              flex: 3,
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "(unmodified)",
+                  hintStyle: TextStyle(
+                    inherit: true,
+                    fontSize: 13
+                  )
+                ),
+              ),
+            ),
+            Text("Order ${index+1}"),
+            const SizedBox(width: 10),
+            const Flexible(
+              flex: 1,
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "(unmodified)",
+                  hintStyle: TextStyle(
+                    inherit: true,
+                    fontSize: 13
+                  )
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 50,
+              child: index != 0 ? IconButton(
+                onPressed: () => removeRow(index), 
+                icon: const Icon(Icons.delete),
+              ) : const SizedBox.shrink(),
+            )
+          ],
+        ),
+      )
+    );
+    widget.config.options.removeAt(index);
+    count--;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
 
