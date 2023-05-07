@@ -42,7 +42,7 @@ class _ExtractPageState extends State<ExtractPage> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(onPressed: moveFiles, child: Text("Move!")),
+              child: ElevatedButton(onPressed: moveFiles, child: const Text("Move!")),
             )
           ],
         ),
