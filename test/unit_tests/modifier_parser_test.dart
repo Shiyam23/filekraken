@@ -188,6 +188,32 @@ void main() {
       expect(result, "1-2-3");
     });
 
+    test("Replace subwords with regex", () {
+      PathModifierConfig config = PathModifierConfig(
+        isRegex: true,
+        options: [
+          PathModifierOptions(
+            match: "\\w{3}",
+            modifier: "1",
+            order: 1
+          ),
+          PathModifierOptions(
+            match: "\\w{3}",
+            modifier: "2",
+            order: 2
+          ),
+          PathModifierOptions(
+            match: "\\w{5}",
+            modifier: "3",
+            order: 3
+          ),
+        ],
+      );
+      String origin = "one-two-three";
+      String result = modifyName(origin, index, config, variables);
+      expect(result, "1-2-3");
+    });
+
     test("Reorder subwords", () {
       PathModifierConfig config = PathModifierConfig(
         isRegex: false,
@@ -202,6 +228,29 @@ void main() {
           ),
           PathModifierOptions(
             match: "three",
+            order: 1
+          ),
+        ],
+      );
+      String origin = "one-two-three";
+      String result = modifyName(origin, index, config, variables);
+      expect(result, "three-two-one");
+    });
+
+    test("Reorder subwords with regex", () {
+      PathModifierConfig config = PathModifierConfig(
+        isRegex: true,
+        options: [
+          PathModifierOptions(
+            match: "\\w{3}",
+            order: 3
+          ),
+          PathModifierOptions(
+            match: "\\w{3}",
+            order: 2
+          ),
+          PathModifierOptions(
+            match: "\\w{5}",
             order: 1
           ),
         ],
@@ -227,6 +276,32 @@ void main() {
           ),
           PathModifierOptions(
             match: "three",
+            modifier: "3",
+            order: 1
+          ),
+        ],
+      );
+      String origin = "one-two-three";
+      String result = modifyName(origin, index, config, variables);
+      expect(result, "3-2-1");
+    });
+
+    test("Reorder and replace subwords with regex", () {
+      PathModifierConfig config = PathModifierConfig(
+        isRegex: true,
+        options: [
+          PathModifierOptions(
+            match: "\\w{3}",
+            modifier: "1",
+            order: 3
+          ),
+          PathModifierOptions(
+            match: "\\w{3}",
+            modifier: "2",
+            order: 2
+          ),
+          PathModifierOptions(
+            match: "\\w{5}",
             modifier: "3",
             order: 1
           ),
