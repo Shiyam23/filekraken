@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:path/path.dart';
-
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
