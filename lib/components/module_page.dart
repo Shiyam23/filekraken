@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/pages/extract_page.dart';
-import 'package:filekraken/pages/inject_page.dart';
+import 'package:filekraken/pages/insert_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import '../model/modifer_parser.dart';
@@ -16,7 +16,7 @@ class ModulePage extends StatefulWidget {
   final ValueNotifier pageIndex;
   final List<Widget> pages = [
     const ExtractPage(),
-    const InjectPage(),
+    const InsertPage(),
     const RenamePage(),
   ];
 

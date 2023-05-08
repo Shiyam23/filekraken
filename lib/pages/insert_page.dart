@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/modifer_parser.dart';
 
-class InjectPage extends StatefulWidget {
-  const InjectPage({super.key});
+class InsertPage extends StatefulWidget {
+  const InsertPage({super.key});
 
   @override
-  State<InjectPage> createState() => _InjectPageState();
+  State<InsertPage> createState() => _InsertPageState();
 }
 
-class _InjectPageState extends State<InjectPage> {
+class _InsertPageState extends State<InsertPage> {
 
   final FilterFilesCubit _filesCubit = FilterFilesCubit();
   String? _rootPath;
@@ -47,8 +47,8 @@ class _InjectPageState extends State<InjectPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
-                onPressed: injectFiles, 
-                child: const Text("Inject!")
+                onPressed: insertFiles, 
+                child: const Text("Insert!")
               ),
             )
           ],
@@ -71,7 +71,7 @@ class _InjectPageState extends State<InjectPage> {
     _selectedFiles = selectedFiles;
   }
 
-  void injectFiles() async {
+  void insertFiles() async {
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }

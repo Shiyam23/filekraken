@@ -39,7 +39,7 @@ class _FKNavigationRailState extends State<FKNavigationRail> {
           ),
           NavigationRailDestination(
             icon: Icon(Icons.drive_file_move_rounded),
-            label: Text("Inject")
+            label: Text("Insert")
           ),
           NavigationRailDestination(
             icon: Icon(Icons.edit_document),
