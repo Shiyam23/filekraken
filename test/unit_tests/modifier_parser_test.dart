@@ -1,7 +1,9 @@
 import 'package:filekraken/model/modifer_parser.dart';
 import 'package:test/test.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
+  setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.macOS);
   group('Modifier evaluation', () {
     test('Swap characters', () {
       String match = "hello";
