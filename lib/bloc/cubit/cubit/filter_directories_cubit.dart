@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'dart:io';
+import 'package:path/path.dart' as path;
 part 'file_entity_state.dart';
 
 class FilterDirectoriesCubit extends Cubit<FileEntityState> {
@@ -35,6 +36,7 @@ Future<List<String>> _getFileEntityPath(String rootPath, FileSystemEntityType fi
   List<FileSystemEntity> entities = await Directory(rootPath).list(followLinks: false).toList();
   return entities
     .where((FileSystemEntity fe) => FileSystemEntity.typeSync(fe.path) == fileEntityType)
+    .where((FileSystemEntity fe) => !path.basename(fe.path).startsWith("."))
     .map((FileSystemEntity fe) => fe.path)
     .toList();
 }
