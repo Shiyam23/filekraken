@@ -520,17 +520,22 @@ class _FilterFileUnitState extends State<FilterFileUnit> {
   }
 }
 
-class RenameFileUnit extends StatefulWidget {
-  
-  const RenameFileUnit({required this.config, super.key});
+class NameModifierUnit extends StatefulWidget {
 
+  const NameModifierUnit({
+    required this.title,
+    required this.config, 
+    super.key
+  });
+
+  final String title;
   final PathModifierConfig config;
 
   @override
-  State<RenameFileUnit> createState() => _RenameFileUnitState();
+  State<NameModifierUnit> createState() => _NameModifierUnitState();
 }
 
-class _RenameFileUnitState extends State<RenameFileUnit> {
+class _NameModifierUnitState extends State<NameModifierUnit> {
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
@@ -550,9 +555,9 @@ class _RenameFileUnitState extends State<RenameFileUnit> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Rename files",
-              style: TextStyle(
+            Text(
+              widget.title,
+              style: const TextStyle(
                 inherit: true,
                 fontSize: 30
               ),

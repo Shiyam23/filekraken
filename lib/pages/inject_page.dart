@@ -40,7 +40,8 @@ class _InjectPageState extends State<InjectPage> {
             FilterFileUnit(
               onFileSelect: onFileSelect,
             ),
-            RenameFileUnit(
+            NameModifierUnit(
+              title: "Assign directory name",
               config: config,
             ),
             Padding(
@@ -86,14 +87,6 @@ class _InjectPageState extends State<InjectPage> {
         selectedFile.rename(join(newDirectoryPath, basename(selectedFilePath)));
       }
     }
-  }
-
-  void testRegex() {
-    int index = 0;
-    Map<String, String> variables = {"s": "s"};
-    String origin = "bnbtest-21-12-1994-hello";
-    String test = modifyName(origin, index, config, variables);
-    print(test);
   }
 
   @override

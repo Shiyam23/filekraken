@@ -39,7 +39,8 @@ class _RenamePageState extends State<RenamePage> {
             FilterFileUnit(
               onFileSelect: onFileSelect,
             ),
-            RenameFileUnit(
+            NameModifierUnit(
+              title: "Assign file name",
               config: config,
             ),
             Padding(
