@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
+import 'package:filekraken/components/unit.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
 import 'package:flutter/material.dart';
@@ -64,52 +65,33 @@ class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15)
-      ),
-      margin: const EdgeInsets.all(20),
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Select folder",
-              style: TextStyle(
-                inherit: true,
-                fontSize: 30
+    return Unit(
+      title: "Select root folder",
+      content: Row(
+        children: [
+          const Text("Folder path"),
+          Expanded(child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+            child: TextField(
+              controller: _controller,
+              readOnly: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                ),
+                prefixIcon: IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  icon: const Icon(Icons.folder),
+                  enableFeedback: true,
+                  hoverColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () => selectDirectory(context),
+                )
               ),
             ),
-            Row(
-              children: [
-                const Text("Folder path"),
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                  child: TextField(
-                    controller: _controller,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      ),
-                      prefixIcon: IconButton(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        icon: const Icon(Icons.folder),
-                        enableFeedback: true,
-                        hoverColor: Colors.transparent,
-                        splashColor: Colors.transparent,
-                        onPressed: () => selectDirectory(context),
-                      )
-                    ),
-                  ),
-                )),
-              ],
-            )
-          ],
-        ),
-      ),
+          )),
+        ],
+      )
     );
   }
 
@@ -128,96 +110,65 @@ class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
   }
 }
 
-class FilterDirectoryUnit extends StatefulWidget {
-  FilterDirectoryUnit({
+class FilterFileEntityUnit<T extends Cubit<FileEntityState>> extends StatelessWidget {
+  FilterFileEntityUnit({
     super.key,
-    required this.onDirectorySelect,
-    required this.onFileRefresh
+    required this.onEntitySelect,
+    required this.title,
+    this.onFileRefresh
   });
 
-  final void Function(List<String> selectedDirectories) onDirectorySelect;
-  final void Function() onFileRefresh;
+  final String title;
+  final void Function(List<String> selectedDirectories) onEntitySelect;
+  final void Function()? onFileRefresh;
 
-  late final List<Widget> subUnits = [
-    FilterNone<FilterDirectoriesCubit>(
+  late final Map<String, Widget> subunits = {
+    "None": FilterNone<T>(
       key: const ValueKey(0), 
-      onEntitySelect: onDirectorySelect
+      onEntitySelect: onEntitySelect
     ),
-    FilterBySelection<FilterDirectoriesCubit>(
+    "By Selection": FilterBySelection<T>(
       key: const ValueKey(1), 
-      onEntitySelect: onDirectorySelect,
+      onEntitySelect: onEntitySelect,
       onRefresh: onFileRefresh,
     ),
-    FilterByNameSubUnit<FilterDirectoriesCubit>(key: const ValueKey(2), onDirectorySelect: onDirectorySelect,)
-  ];
-
-  @override
-  State<FilterDirectoryUnit> createState() => _FilterDirectoryUnitState();
-}
-
-class _FilterDirectoryUnitState extends State<FilterDirectoryUnit> {
-
-  int filterModeIndex = 0;
+    "By Name": FilterByNameSubUnit<T>(
+      key: const ValueKey(2), onDirectorySelect: onEntitySelect
+    )
+  };
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15)
-      ),
-      margin: const EdgeInsets.all(20),
-      elevation: 15,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                const Text(
-                  "Filter folder",
-                  style: TextStyle(
-                    inherit: true,
-                    fontSize: 30
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 130,
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child: DropdownButton(
-                      isExpanded: true,
-                      underline: const SizedBox.shrink(),
-                      value: filterModeIndex,
-                      alignment: Alignment.center,
-                      borderRadius: BorderRadius.circular(20),
-                      style: const TextStyle(
-                        inherit: true,
-                        fontSize: 13,
-                        color: Colors.black,
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
-                        DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
-                        DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
-                      ],
-                      onChanged: (filterMode) {
-                        if (filterMode != null && filterModeIndex != filterMode) {
-                          widget.onFileRefresh();
-                          setState(() => filterModeIndex = filterMode);
-                        }
-                      }
-                    ),
-                  ),
-                )
-              ],
-            ),
-            widget.subUnits[filterModeIndex]
-          ],
-        ),
-      ),
+    return DynamicUnit(
+      title: title, 
+      subunits: subunits,
+      onSubunitChange: (_) => onFileRefresh?.call(),
     );
   }
+}
+
+class FilterFileUnit extends FilterFileEntityUnit<FilterFilesCubit> {
+  FilterFileUnit({
+    super.key, 
+    required onFileSelect, 
+    onFileRefresh
+  }) : super(
+    title: "Select files",
+    onEntitySelect: onFileSelect,
+    onFileRefresh: onFileRefresh
+  );
+}
+
+class FilterDirectoryUnit extends FilterFileEntityUnit<FilterDirectoriesCubit> {
+  FilterDirectoryUnit({
+    super.key, 
+    required onDirectorySelect, 
+    onFileRefresh
+  }) : super(
+    title: "Select folders",
+    onEntitySelect: onDirectorySelect,
+    onFileRefresh: onFileRefresh
+  );
 }
 
 class FilterByNameSubUnit<B extends Cubit<FileEntityState>> extends StatefulWidget {
@@ -431,95 +382,6 @@ class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
   }
 }
 
-class FilterFileUnit extends StatefulWidget {
-  FilterFileUnit({super.key, required this.onFileSelect});
-
-  final void Function(List<String> selectedFiles) onFileSelect;
-
-  late final List<Widget> subUnits = [
-    FilterNone<FilterFilesCubit>(
-      key: const ValueKey(0), 
-      onEntitySelect: onFileSelect
-    ),
-    FilterBySelection<FilterFilesCubit>(
-      key: const ValueKey(1), 
-      onEntitySelect: onFileSelect,
-    ),
-    FilterByNameSubUnit<FilterFilesCubit>(
-      key: const ValueKey(2), 
-      onDirectorySelect: onFileSelect
-    )
-  ];
-
-
-  @override
-  State<FilterFileUnit> createState() => _FilterFileUnitState();
-}
-
-class _FilterFileUnitState extends State<FilterFileUnit> {
-
-  int filterModeIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15)
-      ),
-      margin: const EdgeInsets.all(20),
-      elevation: 15,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                const Text(
-                  "Filter files",
-                  style: TextStyle(
-                    inherit: true,
-                    fontSize: 30
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 130,
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child: DropdownButton(
-                      isExpanded: true,
-                      underline: const SizedBox.shrink(),
-                      value: filterModeIndex,
-                      alignment: Alignment.center,
-                      borderRadius: BorderRadius.circular(20),
-                      style: const TextStyle(
-                        inherit: true,
-                        fontSize: 13,
-                        color: Colors.black,
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 0, alignment: Alignment.center, child: Text("None")),
-                        DropdownMenuItem(value: 1, alignment: Alignment.center, child: Text("By Selection"),),
-                        DropdownMenuItem(value: 2, alignment: Alignment.center, child: Text("By Name"),),
-                      ],
-                      onChanged: (filterMode) {
-                        if (filterMode != null && filterMode != filterModeIndex) {
-                          setState(() => filterModeIndex = filterMode);
-                        }
-                      }
-                    ),
-                  ),
-                )
-              ],
-            ),
-            widget.subUnits[filterModeIndex]
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class NameModifierUnit extends StatefulWidget {
 
   const NameModifierUnit({
@@ -544,122 +406,108 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15)
-      ),
-      margin: const EdgeInsets.all(20),
-      elevation: 15,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(
-                inherit: true,
-                fontSize: 30
+    return Unit(
+      title: widget.title, 
+      content: Column(
+        children: [
+          Row(
+            children: [
+              const Text("Regular Expression"),
+              StatefulBuilder(
+                builder: (BuildContext context, setState) {
+                  return Checkbox(
+                    value: widget.config.isRegex,
+                    onChanged: (value) {
+                      setState(() => widget.config.isRegex = value!);
+                    }
+                  );
+                },
               ),
+            ],
+          ),
+          AnimatedList(
+            key: _listKey,
+            shrinkWrap: true,
+            initialItemCount: count,
+            itemBuilder: (context, index, animation) => SizeTransition(
+              sizeFactor: animation,
+              child: getRow(index, false)
             ),
-            Row(
-              children: [
-                const Text("Regular Expression"),
-                StatefulBuilder(
-                  builder: (BuildContext context, setState) {
-                    return Checkbox(
-                      value: widget.config.isRegex,
-                      onChanged: (value) {
-                        setState(() => widget.config.isRegex = value!);
-                      }
-                    );
-                  },
-                ),
-              ],
-            ),
-            AnimatedList(
-              key: _listKey,
-              shrinkWrap: true,
-              initialItemCount: count,
-              itemBuilder: (context, index, animation) => SizeTransition(
-                sizeFactor: animation,
-                child: Row(
-                  children: [
-                    Text("Match ${index+1}"),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        initialValue: widget.config.options[index].match,
-                        onChanged: (value) => widget.config.options[index].match = value,
-                        decoration: const InputDecoration(
-                          hintText: "(unmodified)",
-                          hintStyle: TextStyle(
-                            inherit: true,
-                            fontSize: 13
-                          )
-                        ),
-                      ),
-                    ),
-                    Text("Modifier ${index+1}"),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        initialValue: widget.config.options[index].modifier,
-                        onChanged: (value) => widget.config.options[index].modifier = value,
-                        decoration: const InputDecoration(
-                          hintText: "(unmodified)",
-                          hintStyle: TextStyle(
-                            inherit: true,
-                            fontSize: 13
-                          )
-                        ),
-                      ),
-                    ),
-                    Text("Order ${index+1}"),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      flex: 1,
-                      child: TextFormField(
-                        initialValue: widget.config.options[index].order?.toString(),
-                        validator: (value) {
-                          if (value == null) return null;
-                          return int.tryParse(value) == null ? "Zahl!" : null;
-                        },
-                        onChanged: (value) {
-                          widget.config.options[index].order = int.tryParse(value);
-                        },
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: const InputDecoration(
-                          hintText: "(unmodified)",
-                          hintStyle: TextStyle(
-                            inherit: true,
-                            fontSize: 13
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 50,
-                      child: index != 0 ? IconButton(
-                        onPressed: () => removeRow(index), 
-                        icon: const Icon(Icons.delete),
-                      ) : const SizedBox.shrink(),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(onPressed: addRow, child: const Text("Add"))
-            )
-          ],
-        ),
-      ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(onPressed: addRow, child: const Text("Add"))
+          )
+        ],
+      )
     );
   }
+
+  Widget getRow(int index, bool remove) => Row(
+    children: [
+      Text("Match ${index+1}"),
+      const SizedBox(width: 10),
+      Expanded(
+        flex: 3,
+        child: TextFormField(
+          initialValue: remove ? null : widget.config.options[index].match,
+          onChanged: remove ? null : (value) => widget.config.options[index].match = value,
+          decoration: const InputDecoration(
+            hintText: "(unmodified)",
+            hintStyle: TextStyle(
+              inherit: true,
+              fontSize: 13
+            )
+          ),
+        ),
+      ),
+      Text("Modifier ${index+1}"),
+      const SizedBox(width: 10),
+      Expanded(
+        flex: 3,
+        child: TextFormField(
+          initialValue: remove ? null : widget.config.options[index].modifier,
+          onChanged: remove ? null : (value) => widget.config.options[index].modifier = value,
+          decoration: const InputDecoration(
+            hintText: "(unmodified)",
+            hintStyle: TextStyle(
+              inherit: true,
+              fontSize: 13
+            )
+          ),
+        ),
+      ),
+      Text("Order ${index+1}"),
+      const SizedBox(width: 10),
+      Flexible(
+        flex: 1,
+        child: TextFormField(
+          initialValue: remove ? null : widget.config.options[index].order?.toString(),
+          validator: remove ? null: (value) {
+            if (value == null) return null;
+            return int.tryParse(value) == null ? "Zahl!" : null;
+          },
+          onChanged: remove ? null: (value) {
+            widget.config.options[index].order = int.tryParse(value);
+          },
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          decoration: const InputDecoration(
+            hintStyle: TextStyle(
+              inherit: true,
+              fontSize: 13
+            ),
+          ),
+        ),
+      ),
+      SizedBox(
+        width: 50,
+        child: (index != 0 || remove) ? IconButton(
+          onPressed: () => removeRow(index), 
+          icon: const Icon(Icons.delete),
+        ) : const SizedBox.shrink(),
+      )
+    ],
+  );
 
   String? validatePathModifier(String? pathModifier) {
     return _errorText;
@@ -678,59 +526,7 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
       index, 
       (context, animation) => SizeTransition(
         sizeFactor: animation,
-        child: Row(
-          children: [
-            Text("Match ${index+1}"),
-            const SizedBox(width: 10),
-            const Expanded(
-              flex: 3,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "(unmodified)",
-                  hintStyle: TextStyle(
-                    inherit: true,
-                    fontSize: 13
-                  )
-                ),
-              ),
-            ),
-            Text("Modifier ${index+1}"),
-            const SizedBox(width: 10),
-            const Expanded(
-              flex: 3,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "(unmodified)",
-                  hintStyle: TextStyle(
-                    inherit: true,
-                    fontSize: 13
-                  )
-                ),
-              ),
-            ),
-            Text("Order ${index+1}"),
-            const SizedBox(width: 10),
-            const Flexible(
-              flex: 1,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "(unmodified)",
-                  hintStyle: TextStyle(
-                    inherit: true,
-                    fontSize: 13
-                  )
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 50,
-              child: index != 0 ? IconButton(
-                onPressed: () => removeRow(index), 
-                icon: const Icon(Icons.delete),
-              ) : const SizedBox.shrink(),
-            )
-          ],
-        ),
+        child: getRow(index, true)
       )
     );
     widget.config.options.removeAt(index);
@@ -742,4 +538,3 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
     super.dispose();
   }
 }
-
