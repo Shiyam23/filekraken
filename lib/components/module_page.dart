@@ -5,6 +5,7 @@ import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
 import '../pages/rename_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -402,7 +403,7 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   String? _errorText;
-  int count = 1;
+  late int count = widget.config.options.length;
 
   @override
   Widget build(BuildContext context) {
@@ -530,6 +531,124 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
       )
     );
     widget.config.options.removeAt(index);
+    count--;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+}
+
+class GroupUnit extends StatefulWidget {
+
+  const GroupUnit({
+    required this.title,
+    required this.config, 
+    super.key
+  });
+
+  final String title;
+  final GroupConfig config;
+
+  @override
+  State<GroupUnit> createState() => _GroupUnitState();
+}
+
+class _GroupUnitState extends State<GroupUnit> {
+
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+
+  String? _errorText;
+  late int count = widget.config.groups.length;
+
+  @override
+  Widget build(BuildContext context) {
+    return Unit(
+      title: widget.title, 
+      content: Column(
+        children: [
+          AnimatedList(
+            key: _listKey,
+            shrinkWrap: true,
+            initialItemCount: count,
+            itemBuilder: (context, index, animation) => SizeTransition(
+              sizeFactor: animation,
+              child: getRow(index, false)
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(onPressed: addRow, child: const Text("Add"))
+          )
+        ],
+      )
+    );
+  }
+
+  Widget getRow(int index, bool remove) => Row(
+    children: [
+      Text("Group Match ${index+1}"),
+      const SizedBox(width: 10),
+      Expanded(
+        flex: 3,
+        child: TextFormField(
+          initialValue: remove ? null : widget.config.groups[index].match,
+          onChanged: remove ? null : (value) => widget.config.groups[index].match = value,
+          decoration: const InputDecoration(
+            hintText: "(unmodified)",
+            hintStyle: TextStyle(
+              inherit: true,
+              fontSize: 13
+            )
+          ),
+        ),
+      ),
+      Text("Group Name ${index+1}"),
+      const SizedBox(width: 10),
+      Expanded(
+        flex: 3,
+        child: TextFormField(
+          initialValue: remove ? null : widget.config.groups[index].groupName,
+          onChanged: remove ? null : (value) => widget.config.groups[index].groupName = value,
+          decoration: const InputDecoration(
+            hintText: "(unmodified)",
+            hintStyle: TextStyle(
+              inherit: true,
+              fontSize: 13
+            )
+          ),
+        ),
+      ),
+      SizedBox(
+        width: 50,
+        child: !remove ? IconButton(
+          onPressed: () => removeRow(index), 
+          icon: const Icon(Icons.delete),
+        ) : const SizedBox.shrink(),
+      )
+    ],
+  );
+
+  String? validatePathModifier(String? pathModifier) {
+    return _errorText;
+  }
+
+  void addRow() {
+    _listKey.currentState!.insertItem(count);
+    widget.config.groups.add(GroupOption());
+    count++;
+  }
+
+  void removeRow(int index) {
+    _listKey.currentState!.removeItem(
+      index, 
+      (context, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: getRow(index, true)
+      )
+    );
+    widget.config.groups.removeAt(index);
     count--;
   }
 

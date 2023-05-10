@@ -5,6 +5,7 @@ import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
 
 class InsertPage extends StatefulWidget {
@@ -20,8 +21,12 @@ class _InsertPageState extends State<InsertPage> {
   String? _rootPath;
   List<String>? _selectedFiles;
 
-  PathModifierConfig config = PathModifierConfig(
+  PathModifierConfig pathModifierConfig = PathModifierConfig(
     options: [PathModifierOptions(order: 1)]
+  );
+
+  GroupConfig groupConfig = GroupConfig(
+    groups: []
   );
 
   @override
@@ -40,9 +45,13 @@ class _InsertPageState extends State<InsertPage> {
             FilterFileUnit(
               onFileSelect: onFileSelect,
             ),
+            GroupUnit(
+              title: "Group by", 
+              config: groupConfig
+            ),
             NameModifierUnit(
               title: "Assign directory name",
-              config: config,
+              config: pathModifierConfig,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -78,7 +87,7 @@ class _InsertPageState extends State<InsertPage> {
     for (int i = 0; i < _selectedFiles!.length; i++) {
       String selectedFilePath = _selectedFiles![i];
       String fileBasename = basenameWithoutExtension(selectedFilePath);
-      String directoryName = modifyName(fileBasename, i, config, {"s":""});
+      String directoryName = modifyName(fileBasename, i, pathModifierConfig, {"s":""});
       String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
       Directory newDirectory = Directory(newDirectoryPath);
       if (!await newDirectory.exists()) {
