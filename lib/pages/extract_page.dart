@@ -16,8 +16,15 @@ class _ExtractPageState extends State<ExtractPage> {
 
   final FilterDirectoriesCubit _directoriesCubit = FilterDirectoriesCubit();
   final FilterFilesCubit _filesCubit = FilterFilesCubit();
+  final ValueNotifier<int> _depth = ValueNotifier(0);
   String? _rootPath;
   List<String>? _selectedFiles;
+
+  @override
+  void initState() {
+    _depth.addListener(() => refreshFiles());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +39,10 @@ class _ExtractPageState extends State<ExtractPage> {
       ],
       child: Column(
           children: [
-            FolderSelectionUnit(onDirectorySelect: onRootDirectorySelected),
+            FolderSelectionUnit(
+              onDirectorySelect: onRootDirectorySelected,
+              depth: _depth,
+            ),
             FilterDirectoryUnit(
               onDirectorySelect: onDirectorySelect,
               onFileRefresh: refreshFiles,
@@ -51,7 +61,7 @@ class _ExtractPageState extends State<ExtractPage> {
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    _directoriesCubit.emitDirectories(rootPath);
+    _directoriesCubit.emitDirectories(rootPath, _depth.value);
   }
 
   void onDirectorySelect(List<String> directories) {
@@ -60,7 +70,9 @@ class _ExtractPageState extends State<ExtractPage> {
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      List<String> directories = await _directoriesCubit.emitDirectories(_rootPath!);
+      List<String> directories = await _directoriesCubit.emitDirectories(
+        _rootPath!, _depth.value
+      );
       _filesCubit.emitFiles(directories);
     }
   }

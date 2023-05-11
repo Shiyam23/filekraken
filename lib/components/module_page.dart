@@ -4,6 +4,7 @@ import 'package:filekraken/components/unit.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
@@ -53,8 +54,13 @@ class _ModulePageState extends State<ModulePage> {
 
 class FolderSelectionUnit extends StatefulWidget {
   
-  const FolderSelectionUnit({super.key, required this.onDirectorySelect});
+  const FolderSelectionUnit({
+    super.key, 
+    required this.onDirectorySelect,
+    this.depth
+  });
 
+  final ValueNotifier<int>? depth;
   final void Function(String rootPath) onDirectorySelect;
 
   @override
@@ -62,41 +68,82 @@ class FolderSelectionUnit extends StatefulWidget {
 }
 
 class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
+  
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Unit(
       title: "Select root folder",
-      content: Row(
+      content: Column(
         children: [
-          const Text("Folder path"),
-          Expanded(child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-            child: TextField(
-              controller: _controller,
-              readOnly: true,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+          Row(
+            children: [
+              const Text("Folder path"),
+              Expanded(child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                child: TextField(
+                  controller: _controller,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                    prefixIcon: IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      icon: const Icon(Icons.folder),
+                      enableFeedback: true,
+                      hoverColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      onPressed: () => _selectDirectory(context),
+                    )
+                  ),
                 ),
-                prefixIcon: IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  icon: const Icon(Icons.folder),
-                  enableFeedback: true,
-                  hoverColor: Colors.transparent,
-                  splashColor: Colors.transparent,
-                  onPressed: () => selectDirectory(context),
+              )),
+            ],
+          ),
+          widget.depth == null ? const SizedBox.shrink() : Row(
+            children: [
+              const Text("Depth"),
+              SizedBox(
+                width: 230,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                  child: TextFormField(
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
+                    textAlign: TextAlign.center,
+                    initialValue: widget.depth!.value.toString(),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: _validateDepth,
+                    decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                      ),
+                    ),
+                  ),
                 )
               ),
-            ),
-          )),
+            ],
+          ),
+
         ],
       )
     );
   }
 
-  void selectDirectory(BuildContext context) async {
+  String? _validateDepth(String? value) {
+    if (value == null || value == "") return "Must not be empty";
+    int? depth = int.tryParse(value);
+    if (depth == null || depth < 0) {
+      return "Must be a positive number";
+    }
+    widget.depth!.value = depth;
+    return null;
+  }
+
+  void _selectDirectory(BuildContext context) async {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       _controller.text = selectedDirectory;
