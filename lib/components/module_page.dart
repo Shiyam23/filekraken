@@ -196,7 +196,7 @@ class _FilterByNameSubUnitState<B extends Cubit<FileEntityState>> extends State<
         if (state is FileEntityLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is FileEntityWaitingForInput) {
-          return const Text("Waiting for input");
+          return const Text("Waiting for directory input");
         } else if (state is FileEntityLoadedState) {
           return Column(
             children: [
@@ -306,7 +306,10 @@ class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<Fi
       builder: (context, state) {
         if (state is FileEntityLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is FileEntityLoadedState) {
+        } else if (state is FileEntityWaitingForInput) {
+          return const Text("Waiting for directory input");
+        }
+        else if (state is FileEntityLoadedState) {
           for (String path in state.fileEntities) {
             directorySelection[path] = false;
           }
