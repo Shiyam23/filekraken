@@ -60,8 +60,10 @@ class _ExtractPageState extends State<ExtractPage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    _rootPath = rootPath;
-    _directoriesCubit.emitDirectories(rootPath, _depth.value);
+    if (_rootPath != rootPath) {
+      _rootPath = rootPath;
+      _directoriesCubit.emitDirectories(rootPath, _depth.value);
+    }
   }
 
   void onDirectorySelect(List<String> directories) {
