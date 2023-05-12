@@ -135,6 +135,7 @@ class _InsertPageState extends State<InsertPage> {
         }
       }
     }
+    refreshFiles();
   }
 
   @override
