@@ -16,9 +16,11 @@ class GroupOption {
   String? groupName;
 }
 
-Parser _match = anyOf(",").neg().plus().flatten().map((value) => value.trimLeft());
+Parser _nonComma = anyOf(",").neg();
+Parser _escapedComma = string("\\,").map((value) => ",");
+Parser _match = (_escapedComma | _nonComma).plus().flatten().map((value) => value.trimLeft());
 Parser _separator = char(",").map((value) => "");
-Parser _expression = _match & (_separator & _match).map((value) => value[1]).star();
+Parser _expression = _match & (_match & _separator).map((value) => value[1]).star();
 
 List<String> parseGroupMatch(String groupMatch) {
   Result result = _expression.parse(groupMatch);
