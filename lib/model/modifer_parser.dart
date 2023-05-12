@@ -113,28 +113,57 @@ String evaluateModifier(
 
 String _applyVariable(
   String origin, 
-  String value, 
+  String identifier, 
   int index, 
   Map<String, String> variables
 ) {
-  int? charIndex = int.tryParse(value);
+  int? charIndex = int.tryParse(identifier);
   if (charIndex != null) {
     if (charIndex < 1) {
       throw ArgumentError.value(
-        value,
+        identifier,
         "CharIndex value has to be greater than or equal to 1"
       );
     }
     return origin[charIndex-1];
   }
-  if (value == "i") {
+  if (identifier == "i") {
     return index.toString();
   }
-  if (variables.containsKey(value)) {
-    return variables[value]!;
+  if (variables.containsKey(identifier)) {
+    return variables[identifier]!;
+  }
+
+  final Parser startIndex = digit().plus().flatten().trim().map(int.parse);
+  final Parser dash = char("-").map((value) => "");
+  final Parser endIndex = digit().star().flatten().map((value) {
+   int? parsedIndex = int.tryParse(value);
+    return parsedIndex ?? origin.length;
+  });
+  final Parser expression = (startIndex & dash & endIndex);
+  final Result result = expression.parse(identifier);
+  if (result.isSuccess) {
+    int startIndex = result.value[0];
+    int endIndex = result.value[2];
+    if (startIndex < 1 || endIndex < 1) {
+      throw ArgumentError.value(
+        identifier, 
+        "value", 
+        "Both start index and end index have to be greater than zero"
+      );
+    }
+    if (result.value[0] > result.value[2]) {
+      throw ArgumentError.value(
+        identifier, 
+        "value", 
+        "Start index has to be smaller than or equal to end index"
+      );
+    }
+    return origin.substring(result.value[0]-1, result.value[2]);
+    
   }
   throw ArgumentError.value(
-    value, 
+    identifier, 
     "value", 
     "Either value has to be a number or it must be contained in variables."
   );
