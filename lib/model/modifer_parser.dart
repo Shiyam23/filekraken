@@ -1,29 +1,40 @@
 import 'package:petitparser/petitparser.dart';
-
 import 'filename_limitations.dart';
 
 class PathModifierOptions {
-  String? match;
-  String? modifier;
-  int? order;
-
   PathModifierOptions({
     this.match,
     this.modifier,
     this.order
   });
+  String? match;
+  String? modifier;
+  int? order;
 }
 
 class PathModifierConfig {
-  
   List<PathModifierOptions> options;
   bool isRegex;
-
   PathModifierConfig({
     required this.options,
     this.isRegex = false,
   });
 }
+
+class NameGeneratorConfig {
+  NameGeneratorConfig({
+    required this.nameGenerator,
+    required this.numberFiles,
+  });
+  String nameGenerator;
+  int numberFiles;
+}
+
+final noBrackets = anyOf("[]$forbiddenCharacters").neg();
+final identifier = anyOf("[]d$forbiddenCharacters").neg();
+final escapedPar = (char('\\') & anyOf("[]"));
+final deleteVariable = string("[d]").end().map((value) => "");
+
 
 String modifyName(
   String origin, 
@@ -90,9 +101,6 @@ String evaluateModifier(
   Map<String, String> variables
 ) {
   if (modifier == null || modifier == "") return match;
-  final noBrackets = anyOf("[]$forbiddenCharacters").neg();
-  final identifier = anyOf("[]d$forbiddenCharacters").neg();
-  final escapedPar = (char('\\') & anyOf("[]"));
   final variable = (
     char('[').map((value) => "")
     & identifier.plus().flatten().map((value) {
@@ -101,14 +109,54 @@ String evaluateModifier(
     & char(']').map((value) => "")
   ).map((value) => value.join());
   final term = escapedPar.flatten() | noBrackets | variable;
-  final expression = 
-    string("[d]").end().map((value) => "") 
-    | term.star().map((value) => value.join()).end();
-  var result = expression.parse(modifier);
+  final expression = deleteVariable | term.star().map((value) => value.join()).end();
+  final result = expression.parse(modifier);
   if (result.isFailure) {
     throw ArgumentError("Invalid modifier");
   }
   return result.value;
+}
+
+String generateName({
+  required NameGeneratorConfig config,
+  required int index,
+  required Map<String, String> variables
+}) {
+  final variable = (
+    char('[').map((value) => "")
+    & identifier.plus().flatten().map((value) {
+      return _applyListVariable(value, index, variables);
+    }) 
+    & char(']').map((value) => "")
+  ).map((value) => value.join());
+  final term = escapedPar.flatten() | noBrackets | variable;
+  final expression = term.star().map((value) => value.join()).end();
+  var result = expression.parse(config.nameGenerator);
+  if (result.isFailure) {
+    throw ArgumentError("Invalid modifier");
+  }
+  return result.value;
+}
+
+String? _applyListVariable(
+  String identifier, 
+  int index, 
+  Map<String, String> variables
+) {
+  int? charIndex = int.tryParse(identifier);
+  if (charIndex != null) {
+    throw ArgumentError.value(
+      identifier,
+      "CharIndex value not allowed here"
+    );
+  }
+  if (identifier == "i") {
+    return index.toString();
+  }
+  if (variables.containsKey(identifier)) {
+    return variables[identifier]!;
+  }
+  return null;
 }
 
 String _applyVariable(
@@ -127,13 +175,10 @@ String _applyVariable(
     }
     return origin[charIndex-1];
   }
-  if (identifier == "i") {
-    return index.toString();
+  String? listVariable = _applyListVariable(identifier, index, variables);
+  if (listVariable != null) {
+    return listVariable;
   }
-  if (variables.containsKey(identifier)) {
-    return variables[identifier]!;
-  }
-
   final Parser startIndex = digit().plus().flatten().trim().map(int.parse);
   final Parser dash = char("-").map((value) => "");
   final Parser endIndex = digit().star().flatten().map((value) {
@@ -168,3 +213,4 @@ String _applyVariable(
     "Either value has to be a number or it must be contained in variables."
   );
 }
+

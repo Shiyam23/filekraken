@@ -42,6 +42,10 @@ class _FKNavigationRailState extends State<FKNavigationRail> {
             label: Text("Insert")
           ),
           NavigationRailDestination(
+            icon: Icon(Icons.file_copy),
+            label: Text("Create")
+          ),
+          NavigationRailDestination(
             icon: Icon(Icons.edit_document),
             label: Text("Rename"),
           ),

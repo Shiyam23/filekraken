@@ -1,7 +1,6 @@
 import 'package:filekraken/components/navigation_rail.dart';
 import 'package:flutter/material.dart';
 import 'package:filekraken/components/titlebar.dart';
-
 import 'components/module_page.dart';
 
 class Layout extends StatelessWidget {
@@ -28,7 +27,5 @@ class Layout extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  
+  } 
 }

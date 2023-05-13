@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 String get forbiddenCharacters {
   switch (defaultTargetPlatform) {
     case TargetPlatform.windows:
-      return "\\/:*?\"<>|";
+      return r'\\/:*?\"<>|';
     case TargetPlatform.macOS:
-      return ":";
+      return ':';
     case TargetPlatform.linux:
       throw UnimplementedError("Not implemented yet");
     default:

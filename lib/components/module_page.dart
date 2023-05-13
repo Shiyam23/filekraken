@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/unit.dart';
+import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
+import '../pages/create_page.dart';
 import '../pages/rename_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,6 +22,7 @@ class ModulePage extends StatefulWidget {
   final List<Widget> pages = [
     const ExtractPage(),
     const InsertPage(),
+    const CreatePage(),
     const RenamePage(),
   ];
 
@@ -384,6 +387,7 @@ class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<Fi
                 }
               ),
               title: Text(basename(e)),
+              visualDensity: VisualDensity.compact,
             )).toList(),
           );
         } else {
@@ -423,6 +427,7 @@ class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
             physics: const ClampingScrollPhysics(),
             children: state.fileEntities.map((e) => ListTile(
               title: Text(basename(e)),
+              visualDensity: VisualDensity.compact,
             )).toList(),
           );
         } else {
@@ -704,6 +709,186 @@ class _GroupUnitState extends State<GroupUnit> {
 
   @override
   void dispose() {
+    super.dispose();
+  }
+}
+
+class NameGeneratorUnit extends StatelessWidget {
+  
+  const NameGeneratorUnit({
+    super.key, 
+    required this.config
+  });
+  
+  final NameGeneratorConfig config;
+
+  @override
+  Widget build(BuildContext context) {
+    return Unit(
+      title: "Select root folder",
+      content: Column(
+        children: [
+          Column(
+            children: [
+              Row(
+                children: [
+                  const Text("Generator: "),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                    child: TextFormField(
+                      initialValue: config.nameGenerator,
+                      onChanged: (value) => config.nameGenerator = value,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
+                      ),
+                    ),
+                  )),
+                ],
+              ),
+              Row(
+                children: [
+                  const Text("Number of files"),
+                  SizedBox(
+                    width: 230,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                      child: TextFormField(
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        initialValue: config.numberFiles.toString(),
+                        onChanged: (value) {
+                          config.numberFiles = int.parse(value);
+                        },
+                        decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                        ),
+                      ),
+                    )
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ]
+      )
+    );
+  }
+}
+
+class FileContentUnit extends StatelessWidget {
+  FileContentUnit({
+    super.key,
+    required this.content
+  }) : subunits = {
+    "Text": TextFileContentUnit(content: content),
+    "File": BinaryFileContentUnit(content: content),
+  };
+
+  final FileContent content;
+  final Map<String, Widget> subunits;
+
+  @override
+  Widget build(BuildContext context) {
+    return DynamicUnit(
+      title: "File Content",
+      subunits: subunits,
+      onSubunitChange: (subunit) {
+        switch (subunit) {
+          case "Text": content.mode = ContentMode.text;break;
+          case "File": content.mode = ContentMode.binary;break;
+        }
+      },
+    );
+  }
+}
+
+class TextFileContentUnit extends StatelessWidget {
+  
+  const TextFileContentUnit({super.key, required this.content});
+
+  final FileContent content;
+  
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      minLines: 5,
+      maxLines: 10,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+      ),
+      onChanged: (value) {
+        content.textContent = value;
+      },
+    );
+  }
+}
+
+class BinaryFileContentUnit extends StatefulWidget {
+  
+  const BinaryFileContentUnit({super.key, required this.content});
+
+  final FileContent content;
+
+  @override
+  State<BinaryFileContentUnit> createState() => _BinaryFileContentUnitState();
+}
+
+class _BinaryFileContentUnitState extends State<BinaryFileContentUnit> {
+  
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Text("File path"),
+          Expanded(child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+            child: TextField(
+              controller: _controller,
+              readOnly: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                ),
+                prefixIcon: IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  icon: const Icon(Icons.folder),
+                  enableFeedback: true,
+                  hoverColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () => _selectFile(context),
+                )
+              ),
+            ),
+          )
+        ),
+      ],
+    );
+  }
+
+  void _selectFile(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      String? path = result.files.first.path;
+      if (path != null) {
+        _controller.text = path;
+        widget.content.binaryFilePath = path;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
     super.dispose();
   }
 }

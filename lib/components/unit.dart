@@ -73,8 +73,8 @@ class _DynamicUnitState extends State<DynamicUnit> {
                       .toList(),
                       onChanged: (String? mode) {
                         if (mode != null && filterMode != mode) {
-                          widget.onSubunitChange?.call;
                           setState(() => filterMode = mode);
+                          widget.onSubunitChange?.call(mode);
                         }
                       }
                     ),
