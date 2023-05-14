@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:filekraken/model/file_content.dart';
 import 'package:path/path.dart';
@@ -72,36 +71,47 @@ class _CreatePageState extends State<CreatePage> {
       // TODO: Show error dialog
       return;
     }
-    List<int> data;
-    String fileExtension = "";
-    switch (fileContent.mode) {
-      case ContentMode.text:
-        if (fileContent.textContent == null) {
-          // TODO: Show error dialog
-          return;
-        }
-        data = utf8.encode(fileContent.textContent!);
-        fileExtension = ".txt";
-        break;
-      case ContentMode.binary:
-        if (fileContent.binaryFilePath == null) {
-          // TODO: Show error dialog
-          return;
-        }
-        data = File(fileContent.binaryFilePath!).readAsBytesSync();
-        fileExtension = extension(fileContent.binaryFilePath!); 
-        break;
-    }
+    Map<String, String> variables = {"s": "d"};
+    ContentMode mode = fileContent.mode;
     for (int i = 0; i < config.numberFiles; i++) {
-      String generatedName = generateName(
-        config: config, 
+      String generatedName = applyVariables(
+        content: config.nameGenerator, 
         index: i, 
-        variables: {"s": "d"}
+        variables: variables
       );
-      File file = File(join(_rootPath!, generatedName + fileExtension));
-      if (!await file.exists()) {
-        file.create();
-        file.writeAsBytes(data);
+      switch (mode) {
+        case ContentMode.text: {
+          if (fileContent.textContent == null) {
+            // TODO: Show error dialog
+            return;
+          }
+          String textContent = fileContent.textContent!;
+          String modifiedContent = applyVariables(
+            content: textContent, 
+            index: i, 
+            variables: variables
+          );
+          File newFile = File(join(_rootPath!, "$generatedName.txt"));
+          if (!await newFile.exists()) {
+            await newFile.create();
+            await newFile.writeAsString(modifiedContent);
+          }
+          break;
+        }
+        case ContentMode.binary: {
+          if (fileContent.binaryFilePath == null) {
+            // TODO: Show error dialog
+            return;
+          }
+          List<int> fileData = await File(fileContent.binaryFilePath!).readAsBytes();
+          String fileExtension = extension(fileContent.binaryFilePath!);
+          File newFile = File(join(_rootPath!, generatedName + fileExtension));
+          if (!await newFile.exists()) {
+            await newFile.create();
+            await newFile.writeAsBytes(fileData);
+          }
+          break;
+        }
       }
     }
   }

@@ -104,7 +104,7 @@ String evaluateModifier(
   final variable = (
     char('[').map((value) => "")
     & identifier.plus().flatten().map((value) {
-      return _applyVariable(match, value, index, variables);
+      return _evaluateVariable(match, value, index, variables);
     }) 
     & char(']').map((value) => "")
   ).map((value) => value.join());
@@ -117,28 +117,28 @@ String evaluateModifier(
   return result.value;
 }
 
-String generateName({
-  required NameGeneratorConfig config,
+String applyVariables({
+  required String content,
   required int index,
   required Map<String, String> variables
 }) {
   final variable = (
     char('[').map((value) => "")
     & identifier.plus().flatten().map((value) {
-      return _applyListVariable(value, index, variables);
+      return _evaluateListVariable(value, index, variables);
     }) 
     & char(']').map((value) => "")
   ).map((value) => value.join());
   final term = escapedPar.flatten() | noBrackets | variable;
   final expression = term.star().map((value) => value.join()).end();
-  var result = expression.parse(config.nameGenerator);
+  var result = expression.parse(content);
   if (result.isFailure) {
     throw ArgumentError("Invalid modifier");
   }
   return result.value;
 }
 
-String? _applyListVariable(
+String? _evaluateListVariable(
   String identifier, 
   int index, 
   Map<String, String> variables
@@ -159,7 +159,7 @@ String? _applyListVariable(
   return null;
 }
 
-String _applyVariable(
+String _evaluateVariable(
   String origin, 
   String identifier, 
   int index, 
@@ -175,7 +175,7 @@ String _applyVariable(
     }
     return origin[charIndex-1];
   }
-  String? listVariable = _applyListVariable(identifier, index, variables);
+  String? listVariable = _evaluateListVariable(identifier, index, variables);
   if (listVariable != null) {
     return listVariable;
   }
