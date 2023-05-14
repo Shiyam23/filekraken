@@ -725,7 +725,7 @@ class NameGeneratorUnit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Unit(
-      title: "Select root folder",
+      title: "Choose name for files",
       content: Column(
         children: [
           Column(
