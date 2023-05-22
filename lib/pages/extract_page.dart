@@ -1,21 +1,19 @@
 import 'dart:io';
+import 'package:filekraken/service/file_op.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
-import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ExtractPage extends StatefulWidget {
+class ExtractPage extends ConsumerStatefulWidget {
   const ExtractPage({super.key});
 
   @override
-  State<ExtractPage> createState() => _ExtractPageState();
+  ConsumerState<ExtractPage> createState() => _ExtractPageState();
 }
 
-class _ExtractPageState extends State<ExtractPage> {
+class _ExtractPageState extends ConsumerState<ExtractPage> {
 
-  final FilterDirectoriesCubit _directoriesCubit = FilterDirectoriesCubit();
-  final FilterFilesCubit _filesCubit = FilterFilesCubit();
   final ValueNotifier<int> _depth = ValueNotifier(0);
   String? _rootPath;
   List<String>? _selectedFiles;
@@ -28,54 +26,39 @@ class _ExtractPageState extends State<ExtractPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(
-          value: _directoriesCubit,
+    return Column(
+      children: [
+        FolderSelectionUnit(
+          onDirectorySelect: onRootDirectorySelected,
+          depth: _depth,
         ),
-        BlocProvider.value(
-          value: _filesCubit,
+        FilterDirectoryUnit(
+          onDirectorySelect: onDirectorySelect,
+          onFileRefresh: refreshFiles,
         ),
+        FilterFileUnit(
+          onFileSelect: onFileSelect,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(onPressed: moveFiles, child: const Text("Move!")),
+        )
       ],
-      child: Column(
-          children: [
-            FolderSelectionUnit(
-              onDirectorySelect: onRootDirectorySelected,
-              depth: _depth,
-            ),
-            FilterDirectoryUnit(
-              onDirectorySelect: onDirectorySelect,
-              onFileRefresh: refreshFiles,
-            ),
-            FilterFileUnit(
-              onFileSelect: onFileSelect,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(onPressed: moveFiles, child: const Text("Move!")),
-            )
-          ],
-        ),
     );
   }
 
   void onRootDirectorySelected(String rootPath) {
-    if (_rootPath != rootPath) {
-      _rootPath = rootPath;
-      _directoriesCubit.emitDirectories(rootPath, _depth.value);
-    }
+    _rootPath = rootPath;
+    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, _depth.value);
   }
 
   void onDirectorySelect(List<String> directories) {
-    _filesCubit.emitFiles(directories);
+    ref.read(fileListStateProvider.notifier).emitFiles(directories);
   }
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      List<String> directories = await _directoriesCubit.emitDirectories(
-        _rootPath!, _depth.value
-      );
-      _filesCubit.emitFiles(directories);
+      ref.read(directoryListStateProvider.notifier).emitDirectories(_rootPath!, _depth.value);
     }
   }
 
@@ -95,12 +78,5 @@ class _ExtractPageState extends State<ExtractPage> {
     }
     _selectedFiles?.clear();
     refreshFiles();
-  }
-
-  @override
-  void dispose() {
-    _directoriesCubit.close();
-    _filesCubit.close();
-    super.dispose();
   }
 }

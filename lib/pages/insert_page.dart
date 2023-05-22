@@ -1,23 +1,21 @@
 import 'dart:io';
+import 'package:filekraken/service/file_op.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
-
-import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
 
-class InsertPage extends StatefulWidget {
+class InsertPage extends ConsumerStatefulWidget {
   const InsertPage({super.key});
 
   @override
-  State<InsertPage> createState() => _InsertPageState();
+  ConsumerState<InsertPage> createState() => _InsertPageState();
 }
 
-class _InsertPageState extends State<InsertPage> {
+class _InsertPageState extends ConsumerState<InsertPage> {
 
-  final FilterFilesCubit _filesCubit = FilterFilesCubit();
   String? _rootPath;
   List<String>? _selectedFiles;
 
@@ -31,48 +29,42 @@ class _InsertPageState extends State<InsertPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(
-          value: _filesCubit,
+    return Column(
+      children: [
+        FolderSelectionUnit(
+          onDirectorySelect: onRootDirectorySelected
         ),
+        FilterFileUnit(
+          onFileSelect: onFileSelect,
+        ),
+        GroupUnit(
+          title: "Group by", 
+          config: groupConfig
+        ),
+        NameModifierUnit(
+          title: "Assign directory name",
+          config: pathModifierConfig,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: insertFiles, 
+            child: const Text("Insert!")
+          ),
+        )
       ],
-      child: Column(
-          children: [
-            FolderSelectionUnit(
-              onDirectorySelect: onRootDirectorySelected
-            ),
-            FilterFileUnit(
-              onFileSelect: onFileSelect,
-            ),
-            GroupUnit(
-              title: "Group by", 
-              config: groupConfig
-            ),
-            NameModifierUnit(
-              title: "Assign directory name",
-              config: pathModifierConfig,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: insertFiles, 
-                child: const Text("Insert!")
-              ),
-            )
-          ],
-        ),
     );
   }
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    _filesCubit.emitFiles([rootPath]);
+    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, 0);
+    
   }
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      _filesCubit.emitFiles([_rootPath!]);
+      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!]);
     }
   }
 
@@ -136,11 +128,5 @@ class _InsertPageState extends State<InsertPage> {
       }
     }
     refreshFiles();
-  }
-
-  @override
-  void dispose() {
-    _filesCubit.close();
-    super.dispose();
   }
 }

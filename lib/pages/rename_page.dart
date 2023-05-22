@@ -1,21 +1,20 @@
 import 'dart:io';
+import 'package:filekraken/service/file_op.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
-import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/modifer_parser.dart';
 
-class RenamePage extends StatefulWidget {
+class RenamePage extends ConsumerStatefulWidget {
   const RenamePage({super.key});
 
   @override
-  State<RenamePage> createState() => _RenamePageState();
+  ConsumerState<RenamePage> createState() => _RenamePageState();
 }
 
-class _RenamePageState extends State<RenamePage> {
+class _RenamePageState extends ConsumerState<RenamePage> {
 
-  final FilterFilesCubit _filesCubit = FilterFilesCubit();
   String? _rootPath;
   List<String>? _selectedFiles;
 
@@ -25,44 +24,38 @@ class _RenamePageState extends State<RenamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(
-          value: _filesCubit,
+    return Column(
+      children: [
+        FolderSelectionUnit(
+          onDirectorySelect: onRootDirectorySelected
         ),
+        FilterFileUnit(
+          onFileSelect: onFileSelect,
+        ),
+        NameModifierUnit(
+          title: "Assign file name",
+          config: config,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: renameFiles, 
+            child: const Text("Rename!")
+          ),
+        )
       ],
-      child: Column(
-          children: [
-            FolderSelectionUnit(
-              onDirectorySelect: onRootDirectorySelected
-            ),
-            FilterFileUnit(
-              onFileSelect: onFileSelect,
-            ),
-            NameModifierUnit(
-              title: "Assign file name",
-              config: config,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: renameFiles, 
-                child: const Text("Rename!")
-              ),
-            )
-          ],
-        ),
     );
   }
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    _filesCubit.emitFiles([rootPath]);
+    ref.read(fileListStateProvider.notifier).emitFiles([rootPath]);
+    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, 0);
   }
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      _filesCubit.emitFiles([_rootPath!]);
+      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!]);
     }
   }
 
@@ -84,11 +77,5 @@ class _RenamePageState extends State<RenamePage> {
       await oldFile.rename(newFilePath);
     }
     refreshFiles();
-  }
-
-  @override
-  void dispose() {
-    _filesCubit.close();
-    super.dispose();
   }
 }

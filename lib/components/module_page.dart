@@ -1,17 +1,17 @@
 import 'package:file_picker/file_picker.dart';
-import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/unit.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
+import 'package:filekraken/service/file_op.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import '../model/group_config.dart';
 import '../model/modifer_parser.dart';
 import '../pages/create_page.dart';
 import '../pages/rename_page.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ModulePage extends StatefulWidget {
   
@@ -55,7 +55,7 @@ class _ModulePageState extends State<ModulePage> {
   }
 }
 
-class FolderSelectionUnit extends StatefulWidget {
+class FolderSelectionUnit extends ConsumerStatefulWidget {
   
   const FolderSelectionUnit({
     super.key, 
@@ -67,10 +67,10 @@ class FolderSelectionUnit extends StatefulWidget {
   final void Function(String rootPath) onDirectorySelect;
 
   @override
-  State<FolderSelectionUnit> createState() => _FolderSelectionUnitState();
+  ConsumerState<FolderSelectionUnit> createState() => _FolderSelectionUnitState();
 }
 
-class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
+class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
   
   final TextEditingController _controller = TextEditingController();
 
@@ -120,6 +120,7 @@ class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
                     initialValue: widget.depth!.value.toString(),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: _validateDepth,
+                    onChanged: _onChange,
                     decoration: const InputDecoration(
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -142,8 +143,16 @@ class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
     if (depth == null || depth < 0) {
       return "Must be a positive number";
     }
-    widget.depth!.value = depth;
     return null;
+  }
+
+  void _onChange(String? value) {
+    if (value == null || value == "") return;
+    int? depth = int.tryParse(value);
+    if (depth == null || depth < 0) {
+      return;
+    }
+    widget.depth!.value = depth;
   }
 
   void _selectDirectory(BuildContext context) async {
@@ -161,30 +170,35 @@ class _FolderSelectionUnitState extends State<FolderSelectionUnit> {
   }
 }
 
-class FilterFileEntityUnit<T extends Cubit<FileEntityState>> extends StatelessWidget {
+class FilterFileEntityUnit extends StatelessWidget {
   FilterFileEntityUnit({
     super.key,
     required this.onEntitySelect,
     required this.title,
-    this.onFileRefresh
+    this.onFileRefresh,
+    required this.provider
   });
 
   final String title;
   final void Function(List<String> selectedDirectories) onEntitySelect;
   final void Function()? onFileRefresh;
+  final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   late final Map<String, Widget> subunits = {
-    "None": FilterNone<T>(
+    "None": FilterNone(
       key: const ValueKey(0), 
-      onEntitySelect: onEntitySelect
+      onEntitySelect: onEntitySelect,
+      provider: provider
     ),
-    "By Selection": FilterBySelection<T>(
+    "By Selection": FilterBySelection(
       key: const ValueKey(1), 
       onEntitySelect: onEntitySelect,
       onRefresh: onFileRefresh,
+      provider: provider
     ),
-    "By Name": FilterByNameSubUnit<T>(
-      key: const ValueKey(2), onDirectorySelect: onEntitySelect
+    "By Name": FilterByNameSubUnit(
+      key: const ValueKey(2), onDirectorySelect: onEntitySelect,
+      provider: provider,
     )
   };
 
@@ -198,7 +212,7 @@ class FilterFileEntityUnit<T extends Cubit<FileEntityState>> extends StatelessWi
   }
 }
 
-class FilterFileUnit extends FilterFileEntityUnit<FilterFilesCubit> {
+class FilterFileUnit extends FilterFileEntityUnit {
   FilterFileUnit({
     super.key, 
     required onFileSelect, 
@@ -206,11 +220,12 @@ class FilterFileUnit extends FilterFileEntityUnit<FilterFilesCubit> {
   }) : super(
     title: "Select files",
     onEntitySelect: onFileSelect,
-    onFileRefresh: onFileRefresh
+    onFileRefresh: onFileRefresh,
+    provider: fileListStateProvider
   );
 }
 
-class FilterDirectoryUnit extends FilterFileEntityUnit<FilterDirectoriesCubit> {
+class FilterDirectoryUnit extends FilterFileEntityUnit {
   FilterDirectoryUnit({
     super.key, 
     required onDirectorySelect, 
@@ -218,96 +233,96 @@ class FilterDirectoryUnit extends FilterFileEntityUnit<FilterDirectoriesCubit> {
   }) : super(
     title: "Select folders",
     onEntitySelect: onDirectorySelect,
-    onFileRefresh: onFileRefresh
+    onFileRefresh: onFileRefresh,
+    provider: directoryListStateProvider
   );
 }
 
-class FilterByNameSubUnit<B extends Cubit<FileEntityState>> extends StatefulWidget {
+class FilterByNameSubUnit extends ConsumerStatefulWidget {
   const FilterByNameSubUnit({
     super.key,
-    required this.onDirectorySelect
+    required this.onDirectorySelect,
+    required this.provider
   });
 
   final void Function(List<String> selectedDirectories) onDirectorySelect;
+  final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   @override
-  State<FilterByNameSubUnit> createState() => _FilterByNameSubUnitState<B>();
+  ConsumerState<FilterByNameSubUnit> createState() => _FilterByNameSubUnitState();
 }
 
-class _FilterByNameSubUnitState<B extends Cubit<FileEntityState>> extends State<FilterByNameSubUnit> {
+class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
   
   final TextEditingController _controller = TextEditingController();
   int _dropDownButtonValue = 0;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<B, FileEntityState>(
-      builder: (context, state) {
-        if (state is FileEntityLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is FileEntityWaitingForInput) {
-          return const Text("Waiting for directory input");
-        } else if (state is FileEntityLoadedState) {
-          return Column(
+    FileEntityState state = ref.watch(widget.provider);
+    if (state is FileEntityLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is FileEntityWaitingForInput) {
+      return const Text("Waiting for directory input");
+    } else if (state is FileEntityLoadedState) {
+      return Column(
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  DropdownButton(
-                    value: _dropDownButtonValue,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 0,
-                        child: Text("Contains"),
-                      ),
-                      DropdownMenuItem(
-                        value: 1,
-                        child: Text("Prefix"),
-                      ),
-                      DropdownMenuItem(
-                        value: 2,
-                        child: Text("Suffix"),
-                      ),
-                    ], 
-                    onChanged: (i) => setState(() {
-                      if (i != null && i != _dropDownButtonValue) {
-                        _dropDownButtonValue = i;
-                      }
-                    })
+              DropdownButton(
+                value: _dropDownButtonValue,
+                items: const [
+                  DropdownMenuItem(
+                    value: 0,
+                    child: Text("Contains"),
                   ),
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                        ),
-                      ),
+                  DropdownMenuItem(
+                    value: 1,
+                    child: Text("Prefix"),
+                  ),
+                  DropdownMenuItem(
+                    value: 2,
+                    child: Text("Suffix"),
+                  ),
+                ], 
+                onChanged: (i) => setState(() {
+                  if (i != null && i != _dropDownButtonValue) {
+                    _dropDownButtonValue = i;
+                  }
+                })
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => showDialog(
-                      context: context, 
-                      builder: (context) => SimpleDialog(
-                        children: filterByName(state.fileEntities, true)
-                        .map((e) => Text(e))
-                        .toList(),
-                      ),
-                    ), 
-                    icon: const Icon(Icons.info)
-                  )
-                ],
+                ),
               ),
-              TextButton(
-                child: const Text("Submit"),
-                onPressed: () => widget.onDirectorySelect(filterByName(state.fileEntities, false)),
+              IconButton(
+                onPressed: () => showDialog(
+                  context: context, 
+                  builder: (context) => SimpleDialog(
+                    children: filterByName(state.fileEntities, true)
+                    .map((e) => Text(e))
+                    .toList(),
+                  ),
+                ), 
+                icon: const Icon(Icons.info)
               )
             ],
-          );
-        } else {
-          return const Text("Something went wrong");
-        }
-      },
-    );
+          ),
+          TextButton(
+            child: const Text("Submit"),
+            onPressed: () => widget.onDirectorySelect(filterByName(state.fileEntities, false)),
+          )
+        ],
+      );
+    } else {
+      return const Text("Something went wrong");
+    }
   }
 
   List<String> filterByName(List<String> fileEntities, bool showOnlyBasename) {
@@ -324,117 +339,107 @@ class _FilterByNameSubUnitState<B extends Cubit<FileEntityState>> extends State<
   }
 }
 
-class FilterBySelection<B extends Cubit<FileEntityState>> extends StatefulWidget {
+class FilterBySelection extends ConsumerStatefulWidget {
   
   const FilterBySelection({
     super.key,
     required this.onEntitySelect,
-    this.onRefresh
+    this.onRefresh,
+    required this.provider
   });
 
   final void Function(List<String> selectedDirectories) onEntitySelect;
   final void Function()? onRefresh;
+  final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   @override
-  State<FilterBySelection> createState() => _FilterBySelectionState<B>();
+  ConsumerState<FilterBySelection> createState() => _FilterBySelectionState();
 }
 
-class _FilterBySelectionState<B extends Cubit<FileEntityState>> extends State<FilterBySelection> {
+class _FilterBySelectionState extends ConsumerState<FilterBySelection> {
   
   Map<String, bool> directorySelection = {};
   int selectedDirectories = 0;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<B, FileEntityState>(
-      listener: (context, state) {
-        if (state is FileEntityLoadedState) {
+    FileEntityState state = ref.read(widget.provider);
+    ref.listen(widget.provider, (previous, next) {
+      if (next is FileEntityLoadedState) {
           widget.onEntitySelect([]);
           directorySelection.clear();
         }
-      },
-      builder: (context, state) {
-        if (state is FileEntityLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is FileEntityWaitingForInput) {
-          return const Text("Waiting for directory input");
-        }
-        else if (state is FileEntityLoadedState) {
-          for (String path in state.fileEntities) {
-            directorySelection[path] = false;
-          }
-          return ListView(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            children: state.fileEntities.map((e) => ListTile(
-              leading: StatefulBuilder(
-                builder: (context, checkBoXSetState) {
-                  return Checkbox(
-                    value: directorySelection[e],
-                    onChanged: (value) {
-                      checkBoXSetState(() => directorySelection[e] = value!);
-                      widget.onEntitySelect(
-                        directorySelection.keys
-                        .where((element) => directorySelection[element] == true)
-                        .toList()
-                      );
-                      selectedDirectories += value! ? 1 : -1;
-                      if (selectedDirectories <= 0) {
-                        widget.onRefresh?.call();
-                      }
-                    },
+    });
+    if (state is FileEntityLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is FileEntityWaitingForInput) {
+      return const Text("Waiting for directory input");
+    }
+    else if (state is FileEntityLoadedState) {
+      for (String path in state.fileEntities) {
+        directorySelection[path] = false;
+      }
+      return ListView(
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        children: state.fileEntities.map((e) => ListTile(
+          leading: StatefulBuilder(
+            builder: (context, checkBoXSetState) {
+              return Checkbox(
+                value: directorySelection[e],
+                onChanged: (value) {
+                  checkBoXSetState(() => directorySelection[e] = value!);
+                  widget.onEntitySelect(
+                    directorySelection.keys
+                    .where((element) => directorySelection[element] == true)
+                    .toList()
                   );
-                }
-              ),
-              title: Text(basename(e)),
-              visualDensity: VisualDensity.compact,
-            )).toList(),
-          );
-        } else {
-          return const Text("Something went wrong!");
-        }
-      },
-    );
+                  selectedDirectories += value! ? 1 : -1;
+                },
+              );
+            }
+          ),
+          title: Text(basename(e)),
+          visualDensity: VisualDensity.compact,
+        )).toList(),
+      );
+    } else {
+      return const Text("Something went wrong!");
+    }
   }
 }
 
-class FilterNone<B extends Cubit<FileEntityState>> extends StatelessWidget {
+class FilterNone extends ConsumerWidget {
   const FilterNone({
     super.key,
-    required this.onEntitySelect
+    required this.onEntitySelect,
+    required this.provider
   });
 
   final void Function(List<String> selectedEntities) onEntitySelect;
+  final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<B, FileEntityState>(
-      listener: (context, state) {
-        if (state is FileEntityLoadedState) {
-          onEntitySelect(state.fileEntities);
-        }
-      },
-      builder: (context, state) {
-        if (state is FileEntityWaitingForInput) {
-          return const Text("Waiting for directory input");
-        } 
-        else if (state is FileEntityLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } 
-        else if (state is FileEntityLoadedState) {
-          return ListView(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            children: state.fileEntities.map((e) => ListTile(
-              title: Text(basename(e)),
-              visualDensity: VisualDensity.compact,
-            )).toList(),
-          );
-        } else {
-          return const Text("Something went wrong!");
-        }
-      },
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    FileEntityState state = ref.watch(provider);
+    if (state is FileEntityWaitingForInput) {
+      return const Text("Waiting for directory input");
+    } 
+    else if (state is FileEntityLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } 
+    else if (state is FileEntityLoadedState) {
+      return ListView(
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        children: state.fileEntities.map((e) => ListTile(
+          title: Text(basename(e)),
+          visualDensity: VisualDensity.compact,
+        )).toList(),
+      );
+    } else {
+      return const Text("Something went wrong!");
+    }
   }
 }
 

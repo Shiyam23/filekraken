@@ -1,22 +1,21 @@
 import 'dart:io';
 import 'package:filekraken/model/file_content.dart';
+import 'package:filekraken/service/file_op.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
-import 'package:filekraken/bloc/cubit/cubit/filter_directories_cubit.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/modifer_parser.dart';
 
-class CreatePage extends StatefulWidget {
+class CreatePage extends ConsumerStatefulWidget {
   const CreatePage({super.key});
 
   @override
-  State<CreatePage> createState() => _CreatePageState();
+  ConsumerState<CreatePage> createState() => _CreatePageState();
 }
 
-class _CreatePageState extends State<CreatePage> {
+class _CreatePageState extends ConsumerState<CreatePage> {
 
-  final FilterFilesCubit _filesCubit = FilterFilesCubit();
   String? _rootPath;
   NameGeneratorConfig config = NameGeneratorConfig(
     nameGenerator: "",
@@ -26,43 +25,37 @@ class _CreatePageState extends State<CreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(
-          value: _filesCubit,
+    return Column(
+      children: [
+        FolderSelectionUnit(
+          onDirectorySelect: onRootDirectorySelected
         ),
+        NameGeneratorUnit(
+          config: config,
+        ),
+        FileContentUnit(
+          content: fileContent,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: createFiles, 
+            child: const Text("Create!")
+          ),
+        )
       ],
-      child: Column(
-        children: [
-          FolderSelectionUnit(
-            onDirectorySelect: onRootDirectorySelected
-          ),
-          NameGeneratorUnit(
-            config: config,
-          ),
-          FileContentUnit(
-            content: fileContent,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: createFiles, 
-              child: const Text("Create!")
-            ),
-          )
-        ],
-      ),
     );
   }
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    _filesCubit.emitFiles([rootPath]);
+    ref.read(fileListStateProvider.notifier).emitFiles([rootPath]);
+    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, 0);
   }
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      _filesCubit.emitFiles([_rootPath!]);
+      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!]);
     }
   }
 
@@ -114,11 +107,5 @@ class _CreatePageState extends State<CreatePage> {
         }
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _filesCubit.close();
-    super.dispose();
   }
 }
