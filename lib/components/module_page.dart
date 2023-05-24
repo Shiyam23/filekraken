@@ -228,9 +228,10 @@ enum FilterMode with FilterModeString{
   byName
 }
 
-mixin FilterModeString {
+mixin FilterModeString on Enum implements Translatable{
+  
   @override
-  String toString() {
+  String toTranslatedString(BuildContext context) {
     switch (this) {
       case FilterMode.none: return "None";
       case FilterMode.bySelection: return "By Selection";

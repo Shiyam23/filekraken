@@ -1,3 +1,6 @@
+import 'package:filekraken/components/unit.dart';
+import 'package:flutter/widgets.dart';
+
 class FileContent {
 
   FileContent({
@@ -16,9 +19,9 @@ enum ContentMode with ContentModeString {
   binary    
 }
 
-mixin ContentModeString{
+mixin ContentModeString implements Translatable{
   @override
-  String toString() {
+  String toTranslatedString(BuildContext context) {
     switch (this) {
       case ContentMode.text: return "Text";
       case ContentMode.binary: return "File";

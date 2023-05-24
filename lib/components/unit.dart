@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class DynamicUnit<T extends Enum> extends StatefulWidget {
+class DynamicUnit<T extends Translatable> extends StatefulWidget {
   const DynamicUnit({
     super.key,
     required this.title,
@@ -18,7 +18,7 @@ class DynamicUnit<T extends Enum> extends StatefulWidget {
   State<DynamicUnit<T>> createState() => _DynamicUnitState<T>();
 }
 
-class _DynamicUnitState<T extends Enum> extends State<DynamicUnit<T>> {
+class _DynamicUnitState<T extends Translatable> extends State<DynamicUnit<T>> {
 
   late T filterMode;
 
@@ -70,7 +70,7 @@ class _DynamicUnitState<T extends Enum> extends State<DynamicUnit<T>> {
                       .map((e) => DropdownMenuItem(
                         value: e,
                         alignment: Alignment.center,
-                        child: Text(e.toString()))
+                        child: Text(e.toTranslatedString(context)))
                       )
                       .toList(),
                       onChanged: (T? mode) {
@@ -130,4 +130,8 @@ class Unit extends StatelessWidget {
       ),
     );
   }
+}
+
+mixin Translatable {
+  String toTranslatedString(BuildContext context);
 }
