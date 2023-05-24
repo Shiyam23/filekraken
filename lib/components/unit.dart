@@ -5,11 +5,13 @@ class DynamicUnit<T extends Enum> extends StatefulWidget {
     super.key,
     required this.title,
     required this.subunits,
+    this.initialSubunit,
     this.onSubunitChange
   });
 
   final String title;
   final Map<T,Widget> subunits;
+  final T? initialSubunit;
   final void Function(T subunit)? onSubunitChange;
 
   @override
@@ -22,7 +24,7 @@ class _DynamicUnitState<T extends Enum> extends State<DynamicUnit<T>> {
 
   @override
   void initState() {
-    filterMode = widget.subunits.keys.first;
+    filterMode = widget.initialSubunit ?? widget.subunits.keys.first;
     super.initState();
   }
 

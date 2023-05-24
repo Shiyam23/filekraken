@@ -1,7 +1,9 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:riverpod/riverpod.dart';
+
+StateProvider<String> rootDirectoryProvider = StateProvider((ref) => "");
 
 StateNotifierProvider <FileListStateNotifier, FileEntityState> fileListStateProvider = StateNotifierProvider((_) {
   return FileListStateNotifier();
@@ -43,7 +45,7 @@ class DirectoryListStateNotifier extends StateNotifier<FileEntityState> {
     List<String> fileEntityPaths = await getFileEntityPath(rootPath, FileSystemEntityType.directory, depth);
     state = FileEntityLoadedState(fileEntities: fileEntityPaths, type: FileSystemEntityType.directory);
     if (shouldRefreshFiles) {
-      ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths, depth);
+      ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths, 0);
     }
     return fileEntityPaths;
   }
@@ -111,4 +113,15 @@ class FileEntityLoadedState extends FileEntityState {
   }
   final List<String> fileEntities;
   final FileSystemEntityType type;
+
+  @override
+  operator==(Object other) {
+    return other is FileEntityLoadedState &&
+    other.type == type &&
+    listEquals(other.fileEntities, fileEntities);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([...fileEntities, type]);
 }
+

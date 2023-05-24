@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:filekraken/model/file_content.dart';
+import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
@@ -15,7 +16,6 @@ class CreatePage extends ConsumerStatefulWidget {
 
 class _CreatePageState extends ConsumerState<CreatePage> {
 
-  String? _rootPath;
   NameGeneratorConfig config = NameGeneratorConfig(
     nameGenerator: "",
     numberFiles: 1
@@ -47,11 +47,12 @@ class _CreatePageState extends ConsumerState<CreatePage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    _rootPath = rootPath;
+    ref.read(rootDirectoryProvider.notifier).state = rootPath;
   }
 
   void createFiles() async {
-    if (_rootPath == null) {
+    String rootPath = ref.read(rootDirectoryProvider);
+    if (rootPath == "") {
       // TODO: Show error dialog
       return;
     }
@@ -75,7 +76,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
             index: i, 
             variables: variables
           );
-          File newFile = File(join(_rootPath!, "$generatedName.txt"));
+          File newFile = File(join(rootPath, "$generatedName.txt"));
           if (!await newFile.exists()) {
             await newFile.create();
             await newFile.writeAsString(modifiedContent);
@@ -89,7 +90,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
           }
           List<int> fileData = await File(fileContent.binaryFilePath!).readAsBytes();
           String fileExtension = extension(fileContent.binaryFilePath!);
-          File newFile = File(join(_rootPath!, generatedName + fileExtension));
+          File newFile = File(join(rootPath, generatedName + fileExtension));
           if (!await newFile.exists()) {
             await newFile.create();
             await newFile.writeAsBytes(fileData);

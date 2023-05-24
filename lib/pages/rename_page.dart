@@ -15,12 +15,22 @@ class RenamePage extends ConsumerStatefulWidget {
 
 class _RenamePageState extends ConsumerState<RenamePage> {
 
-  String? _rootPath;
   List<String>? _selectedFiles;
 
   PathModifierConfig config = PathModifierConfig(
     options: [PathModifierOptions(order: 1)]
   );
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      String rootPath = ref.read(rootDirectoryProvider);
+      if (rootPath != "") {
+        ref.read(fileListStateProvider.notifier).emitFiles([rootPath],0);
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +40,7 @@ class _RenamePageState extends ConsumerState<RenamePage> {
           onDirectorySelect: onRootDirectorySelected
         ),
         FilterFileUnit(
+          initialFilterMode: FilterMode.none,
           onFileSelect: onFileSelect,
         ),
         NameModifierUnit(
@@ -48,13 +59,14 @@ class _RenamePageState extends ConsumerState<RenamePage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    _rootPath = rootPath;
+    ref.read(rootDirectoryProvider.notifier).state = rootPath;
     ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
   }
 
   void refreshFiles() async {
-    if (_rootPath != null) {
-      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], 0);
+    String rootPath = ref.read(rootDirectoryProvider);
+    if (rootPath != "") {
+      ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
     }
   }
 

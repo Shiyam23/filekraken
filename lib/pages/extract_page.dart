@@ -15,13 +15,20 @@ class ExtractPage extends ConsumerStatefulWidget {
 class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   final ValueNotifier<int> _depth = ValueNotifier(0);
-  String? _rootPath;
   List<String>? _selectedFiles;
-  FilterMode? directoryFilterMode;
+  FilterMode directoryFilterMode = FilterMode.none;
 
   @override
   void initState() {
     _depth.addListener(refreshDirectories);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) { 
+      String rootPath = ref.read(rootDirectoryProvider);
+      if (rootPath != "") {
+        ref.read(directoryListStateProvider.notifier).emitDirectories(
+          rootPath: rootPath, depth: 0
+        );
+      }
+    });
     super.initState();
   }
 
@@ -34,11 +41,13 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
           depth: _depth,
         ),
         FilterDirectoryUnit(
+          initialFilterMode: directoryFilterMode,
           onDirectorySelect: onDirectorySelect,
           onFilterModeChange: _onDirFilterModeChange,
         ),
         FilterFileUnit(
           onFileSelect: onFileSelect,
+          initialFilterMode: FilterMode.none,
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -49,7 +58,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    _rootPath = rootPath;
+    ref.read(rootDirectoryProvider.notifier).state = rootPath;
     ref.read(directoryListStateProvider.notifier).emitDirectories(
       rootPath: rootPath, 
       depth: _depth.value
@@ -61,9 +70,10 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void refreshDirectories() async {
-    if (_rootPath != null) {
+    String rootPath = ref.read(rootDirectoryProvider);
+    if (rootPath != "") {
       ref.read(directoryListStateProvider.notifier).emitDirectories(
-        rootPath: _rootPath!, 
+        rootPath: rootPath, 
         depth: _depth.value,
         shouldRefreshFiles: directoryFilterMode == FilterMode.none
       );
@@ -71,11 +81,12 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void _onDirFilterModeChange(FilterMode mode) {
-    if (_rootPath == null) return;
+    String rootPath = ref.read(rootDirectoryProvider);
+    if (rootPath == "") return;
     directoryFilterMode = mode;
     switch (mode) {
       case FilterMode.none:
-        ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], _depth.value + 1);
+        ref.read(fileListStateProvider.notifier).emitFiles([rootPath], _depth.value + 1);
         break;
       case FilterMode.bySelection:
       case FilterMode.byName:
@@ -88,13 +99,14 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void moveFiles() async {
+    String rootPath = ref.read(rootDirectoryProvider);
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
     for (String filePath in _selectedFiles!) {
       File selectedFile = File(filePath);
-      if (_rootPath != null && await selectedFile.exists()) {
-        await selectedFile.rename(path.join(_rootPath!, path.basename(filePath)));
+      if (rootPath != "" && await selectedFile.exists()) {
+        await selectedFile.rename(path.join(rootPath, path.basename(filePath)));
       }
     }
     _selectedFiles?.clear();

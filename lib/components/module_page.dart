@@ -77,6 +77,12 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void initState() {
+    _controller.text = ref.read(rootDirectoryProvider);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Unit(
       title: "Select root folder",
@@ -178,12 +184,14 @@ class FilterFileEntityUnit extends StatelessWidget {
     required this.onEntitySelect,
     required this.title,
     this.onFilterModeChange,
+    required this.initialFilterMode,
     required this.provider
   });
 
   final String title;
   final void Function(List<String> selectedDirectories) onEntitySelect;
   final OnFilterModeChange? onFilterModeChange;
+  final FilterMode initialFilterMode;
   final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   late final Map<FilterMode, Widget> subunits = {
@@ -236,10 +244,12 @@ class FilterFileUnit extends FilterFileEntityUnit {
   FilterFileUnit({
     super.key, 
     required onFileSelect, 
+    required FilterMode initialFilterMode,
     OnFilterModeChange? onFilterModeChange
   }) : super(
     title: "Select files",
     onEntitySelect: onFileSelect,
+    initialFilterMode: initialFilterMode,
     onFilterModeChange: onFilterModeChange,
     provider: fileListStateProvider
   );
@@ -248,11 +258,13 @@ class FilterFileUnit extends FilterFileEntityUnit {
 class FilterDirectoryUnit extends FilterFileEntityUnit {
   FilterDirectoryUnit({
     super.key, 
-    required onDirectorySelect, 
+    required onDirectorySelect,
+    required FilterMode initialFilterMode,
     OnFilterModeChange? onFilterModeChange
   }) : super(
     title: "Select folders",
     onEntitySelect: onDirectorySelect,
+    initialFilterMode: initialFilterMode,
     onFilterModeChange: onFilterModeChange,
     provider: directoryListStateProvider
   );

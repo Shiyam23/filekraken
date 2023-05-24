@@ -16,16 +16,24 @@ class InsertPage extends ConsumerStatefulWidget {
 
 class _InsertPageState extends ConsumerState<InsertPage> {
 
-  String? _rootPath;
   List<String>? _selectedFiles;
-
   PathModifierConfig pathModifierConfig = PathModifierConfig(
     options: [PathModifierOptions(order: 1)]
   );
-
   GroupConfig groupConfig = GroupConfig(
     groups: []
   );
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      String rootPath = ref.read(rootDirectoryProvider);
+      if (rootPath != "") {
+        ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +43,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
           onDirectorySelect: onRootDirectorySelected
         ),
         FilterFileUnit(
+          initialFilterMode: FilterMode.none,
           onFileSelect: onFileSelect,
         ),
         GroupUnit(
@@ -57,7 +66,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
   }
 
   void onRootDirectorySelected(String rootPath) {
-    _rootPath = rootPath;
+    ref.read(rootDirectoryProvider.notifier).state = rootPath;
     ref.read(directoryListStateProvider.notifier).emitDirectories(
       rootPath: rootPath,
       depth: 0
@@ -65,8 +74,9 @@ class _InsertPageState extends ConsumerState<InsertPage> {
   }
 
   void refreshFiles() async {
-    if (_rootPath != null) {
-      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], 0);
+    String rootPath = ref.read(rootDirectoryProvider);
+    if (rootPath != "") {
+      ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
     }
   }
 
@@ -75,6 +85,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
   }
 
   void insertFiles() async {
+    String rootPath = ref.read(rootDirectoryProvider);
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
@@ -107,7 +118,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       }
       for (String groupName in fileGroups.keys) {
         if (fileGroups[groupName]!.isEmpty) continue;
-        Directory groupDirectory = Directory(join(_rootPath!, groupName));
+        Directory groupDirectory = Directory(join(rootPath, groupName));
         if (!await groupDirectory.exists()) groupDirectory.create();
         for (String filePath in fileGroups[groupName]!) {
           File file = File(filePath);
