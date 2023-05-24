@@ -11,7 +11,18 @@ class FileContent {
   
 }
 
-enum ContentMode {
+enum ContentMode with ContentModeString {
   text,
   binary    
+}
+
+mixin ContentModeString{
+  @override
+  String toString() {
+    switch (this) {
+      case ContentMode.text: return "Text";
+      case ContentMode.binary: return "File";
+    }
+    return super.toString();
+  }
 }

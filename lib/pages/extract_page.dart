@@ -17,7 +17,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   final ValueNotifier<int> _depth = ValueNotifier(0);
   String? _rootPath;
   List<String>? _selectedFiles;
-  String? mode;
+  FilterMode? directoryFilterMode;
 
   @override
   void initState() {
@@ -65,20 +65,20 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
       ref.read(directoryListStateProvider.notifier).emitDirectories(
         rootPath: _rootPath!, 
         depth: _depth.value,
-        shouldRefreshFiles: mode == "None"
+        shouldRefreshFiles: directoryFilterMode == FilterMode.none
       );
     }
   }
 
-  void _onDirFilterModeChange(String mode) {
+  void _onDirFilterModeChange(FilterMode mode) {
     if (_rootPath == null) return;
-    this.mode = mode;
+    directoryFilterMode = mode;
     switch (mode) {
-      case "None":
+      case FilterMode.none:
         ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], _depth.value + 1);
         break;
-      case "By Selection":
-      case "By Name":
+      case FilterMode.bySelection:
+      case FilterMode.byName:
         ref.read(fileListStateProvider.notifier).reset();
     }
   }

@@ -13,7 +13,7 @@ import '../model/modifer_parser.dart';
 import '../pages/create_page.dart';
 import '../pages/rename_page.dart';
 
-typedef OnFilterModeChange = void Function(String filterMode);
+typedef OnFilterModeChange = void Function(FilterMode filterMode);
 
 class ModulePage extends StatefulWidget {
   
@@ -186,30 +186,49 @@ class FilterFileEntityUnit extends StatelessWidget {
   final OnFilterModeChange? onFilterModeChange;
   final StateNotifierProvider<dynamic, FileEntityState> provider;
 
-  late final Map<String, Widget> subunits = {
-    "None": FilterNone(
+  late final Map<FilterMode, Widget> subunits = {
+    FilterMode.none: FilterNone(
       key: const ValueKey(0), 
       onEntitySelect: onEntitySelect,
       provider: provider
     ),
-    "By Selection": FilterBySelection(
+    FilterMode.bySelection: FilterBySelection(
       key: const ValueKey(1), 
       onEntitySelect: onEntitySelect,
       provider: provider
     ),
-    "By Name": FilterByNameSubUnit(
-      key: const ValueKey(2), onDirectorySelect: onEntitySelect,
+    FilterMode.byName: FilterByNameSubUnit(
+      key: const ValueKey(2), 
+      onEntitySelect: onEntitySelect,
       provider: provider,
     )
   };
 
   @override
   Widget build(BuildContext context) {
-    return DynamicUnit(
+    return DynamicUnit<FilterMode>(
       title: title, 
       subunits: subunits,
       onSubunitChange: (mode) => onFilterModeChange?.call(mode),
     );
+  }
+}
+
+enum FilterMode with FilterModeString{
+  none,
+  bySelection,
+  byName
+}
+
+mixin FilterModeString {
+  @override
+  String toString() {
+    switch (this) {
+      case FilterMode.none: return "None";
+      case FilterMode.bySelection: return "By Selection";
+      case FilterMode.byName: return "By Name";
+      default: throw UnimplementedError();
+    }
   }
 }
 
@@ -242,11 +261,11 @@ class FilterDirectoryUnit extends FilterFileEntityUnit {
 class FilterByNameSubUnit extends ConsumerStatefulWidget {
   const FilterByNameSubUnit({
     super.key,
-    required this.onDirectorySelect,
+    required this.onEntitySelect,
     required this.provider
   });
 
-  final void Function(List<String> selectedDirectories) onDirectorySelect;
+  final void Function(List<String> selectedDirectories) onEntitySelect;
   final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   @override
@@ -317,7 +336,7 @@ class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
           ),
           TextButton(
             child: const Text("Submit"),
-            onPressed: () => widget.onDirectorySelect(filterByName(state.fileEntities, false)),
+            onPressed: () => widget.onEntitySelect(filterByName(state.fileEntities, false)),
           )
         ],
       );
@@ -790,27 +809,25 @@ class FileContentUnit extends StatelessWidget {
     super.key,
     required this.content
   }) : subunits = {
-    "Text": TextFileContentUnit(content: content),
-    "File": BinaryFileContentUnit(content: content),
+    ContentMode.text: TextFileContentUnit(content: content),
+    ContentMode.binary: BinaryFileContentUnit(content: content),
   };
 
   final FileContent content;
-  final Map<String, Widget> subunits;
+  final Map<ContentMode, Widget> subunits;
 
   @override
   Widget build(BuildContext context) {
-    return DynamicUnit(
+    return DynamicUnit<ContentMode>(
       title: "File Content",
       subunits: subunits,
       onSubunitChange: (subunit) {
-        switch (subunit) {
-          case "Text": content.mode = ContentMode.text;break;
-          case "File": content.mode = ContentMode.binary;break;
-        }
-      },
+        content.mode = subunit;
+      }
     );
   }
 }
+
 
 class TextFileContentUnit extends StatelessWidget {
   

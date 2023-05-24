@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class DynamicUnit extends StatefulWidget {
+class DynamicUnit<T extends Enum> extends StatefulWidget {
   const DynamicUnit({
     super.key,
     required this.title,
@@ -9,16 +9,16 @@ class DynamicUnit extends StatefulWidget {
   });
 
   final String title;
-  final Map<String,Widget> subunits;
-  final void Function(String subunit)? onSubunitChange;
+  final Map<T,Widget> subunits;
+  final void Function(T subunit)? onSubunitChange;
 
   @override
-  State<DynamicUnit> createState() => _DynamicUnitState();
+  State<DynamicUnit<T>> createState() => _DynamicUnitState<T>();
 }
 
-class _DynamicUnitState extends State<DynamicUnit> {
+class _DynamicUnitState<T extends Enum> extends State<DynamicUnit<T>> {
 
-  late String filterMode;
+  late T filterMode;
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _DynamicUnitState extends State<DynamicUnit> {
                   width: 130,
                   child: ButtonTheme(
                     alignedDropdown: true,
-                    child: DropdownButton(
+                    child: DropdownButton<T>(
                       isExpanded: true,
                       underline: const SizedBox.shrink(),
                       value: filterMode,
@@ -68,16 +68,15 @@ class _DynamicUnitState extends State<DynamicUnit> {
                       .map((e) => DropdownMenuItem(
                         value: e,
                         alignment: Alignment.center,
-                        child: Text(e))
+                        child: Text(e.toString()))
                       )
                       .toList(),
-                      onChanged: (String? mode) {
+                      onChanged: (T? mode) {
                         if (mode != null && filterMode != mode) {
                           setState(() {
                             filterMode = mode;
                             widget.onSubunitChange?.call(mode);
                           });
-                          
                         }
                       }
                     ),
