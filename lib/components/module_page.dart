@@ -363,7 +363,7 @@ class _FilterBySelectionState extends ConsumerState<FilterBySelection> {
 
   @override
   Widget build(BuildContext context) {
-    FileEntityState state = ref.read(widget.provider);
+    FileEntityState state = ref.watch(widget.provider);
     ref.listen(widget.provider, (previous, next) {
       if (next is FileEntityLoadedState) {
           widget.onEntitySelect([]);
