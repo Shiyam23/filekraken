@@ -17,10 +17,11 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   final ValueNotifier<int> _depth = ValueNotifier(0);
   String? _rootPath;
   List<String>? _selectedFiles;
+  String? mode;
 
   @override
   void initState() {
-    _depth.addListener(() => refreshFiles());
+    _depth.addListener(refreshDirectories);
     super.initState();
   }
 
@@ -34,7 +35,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
         ),
         FilterDirectoryUnit(
           onDirectorySelect: onDirectorySelect,
-          onFileRefresh: refreshFiles,
+          onFilterModeChange: _onDirFilterModeChange,
         ),
         FilterFileUnit(
           onFileSelect: onFileSelect,
@@ -49,16 +50,36 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, _depth.value);
+    ref.read(directoryListStateProvider.notifier).emitDirectories(
+      rootPath: rootPath, 
+      depth: _depth.value
+    );
   }
 
   void onDirectorySelect(List<String> directories) {
-    ref.read(fileListStateProvider.notifier).emitFiles(directories);
+    ref.read(fileListStateProvider.notifier).emitFiles(directories, 0);
   }
 
-  void refreshFiles() async {
+  void refreshDirectories() async {
     if (_rootPath != null) {
-      ref.read(directoryListStateProvider.notifier).emitDirectories(_rootPath!, _depth.value);
+      ref.read(directoryListStateProvider.notifier).emitDirectories(
+        rootPath: _rootPath!, 
+        depth: _depth.value,
+        shouldRefreshFiles: mode == "None"
+      );
+    }
+  }
+
+  void _onDirFilterModeChange(String mode) {
+    if (_rootPath == null) return;
+    this.mode = mode;
+    switch (mode) {
+      case "None":
+        ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], _depth.value + 1);
+        break;
+      case "By Selection":
+      case "By Name":
+        ref.read(fileListStateProvider.notifier).reset();
     }
   }
 
@@ -77,6 +98,6 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
       }
     }
     _selectedFiles?.clear();
-    refreshFiles();
+    refreshDirectories();
   }
 }

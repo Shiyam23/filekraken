@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:filekraken/model/file_content.dart';
-import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
@@ -49,14 +48,6 @@ class _CreatePageState extends ConsumerState<CreatePage> {
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    ref.read(fileListStateProvider.notifier).emitFiles([rootPath]);
-    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, 0);
-  }
-
-  void refreshFiles() async {
-    if (_rootPath != null) {
-      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!]);
-    }
   }
 
   void createFiles() async {

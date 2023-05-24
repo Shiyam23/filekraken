@@ -13,6 +13,8 @@ import '../model/modifer_parser.dart';
 import '../pages/create_page.dart';
 import '../pages/rename_page.dart';
 
+typedef OnFilterModeChange = void Function(String filterMode);
+
 class ModulePage extends StatefulWidget {
   
   ModulePage({super.key, required this.pageIndex, required this.titleBarHeight});
@@ -175,13 +177,13 @@ class FilterFileEntityUnit extends StatelessWidget {
     super.key,
     required this.onEntitySelect,
     required this.title,
-    this.onFileRefresh,
+    this.onFilterModeChange,
     required this.provider
   });
 
   final String title;
   final void Function(List<String> selectedDirectories) onEntitySelect;
-  final void Function()? onFileRefresh;
+  final OnFilterModeChange? onFilterModeChange;
   final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   late final Map<String, Widget> subunits = {
@@ -193,7 +195,6 @@ class FilterFileEntityUnit extends StatelessWidget {
     "By Selection": FilterBySelection(
       key: const ValueKey(1), 
       onEntitySelect: onEntitySelect,
-      onRefresh: onFileRefresh,
       provider: provider
     ),
     "By Name": FilterByNameSubUnit(
@@ -207,7 +208,7 @@ class FilterFileEntityUnit extends StatelessWidget {
     return DynamicUnit(
       title: title, 
       subunits: subunits,
-      onSubunitChange: (_) => onFileRefresh?.call(),
+      onSubunitChange: (mode) => onFilterModeChange?.call(mode),
     );
   }
 }
@@ -216,11 +217,11 @@ class FilterFileUnit extends FilterFileEntityUnit {
   FilterFileUnit({
     super.key, 
     required onFileSelect, 
-    onFileRefresh
+    OnFilterModeChange? onFilterModeChange
   }) : super(
     title: "Select files",
     onEntitySelect: onFileSelect,
-    onFileRefresh: onFileRefresh,
+    onFilterModeChange: onFilterModeChange,
     provider: fileListStateProvider
   );
 }
@@ -229,11 +230,11 @@ class FilterDirectoryUnit extends FilterFileEntityUnit {
   FilterDirectoryUnit({
     super.key, 
     required onDirectorySelect, 
-    onFileRefresh
+    OnFilterModeChange? onFilterModeChange
   }) : super(
     title: "Select folders",
     onEntitySelect: onDirectorySelect,
-    onFileRefresh: onFileRefresh,
+    onFilterModeChange: onFilterModeChange,
     provider: directoryListStateProvider
   );
 }
@@ -344,12 +345,10 @@ class FilterBySelection extends ConsumerStatefulWidget {
   const FilterBySelection({
     super.key,
     required this.onEntitySelect,
-    this.onRefresh,
     required this.provider
   });
 
   final void Function(List<String> selectedDirectories) onEntitySelect;
-  final void Function()? onRefresh;
   final StateNotifierProvider<dynamic, FileEntityState> provider;
 
   @override

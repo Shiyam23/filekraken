@@ -1,16 +1,18 @@
+import 'package:filekraken/service/file_op.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FKNavigationRail extends StatefulWidget {
+class FKNavigationRail extends ConsumerStatefulWidget {
   const FKNavigationRail({super.key, required this.pageIndex});
 
   final ValueNotifier pageIndex;
 
   @override
-  State<FKNavigationRail> createState() => _FKNavigationRailState();
+  ConsumerState<FKNavigationRail> createState() => _FKNavigationRailState();
 }
 
-class _FKNavigationRailState extends State<FKNavigationRail> {
+class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
 
   bool extended = false;
 
@@ -51,7 +53,11 @@ class _FKNavigationRailState extends State<FKNavigationRail> {
           ),
         ],
         onDestinationSelected: (value) => setState(() {
-          widget.pageIndex.value = value;
+          if (value != widget.pageIndex.value) {
+            widget.pageIndex.value = value;
+            ref.read(fileListStateProvider.notifier).reset();
+            ref.read(directoryListStateProvider.notifier).reset();
+          }
         }),
         trailing: Expanded(
           child: Align(

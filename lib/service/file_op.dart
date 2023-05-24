@@ -15,13 +15,17 @@ class FileListStateNotifier extends StateNotifier<FileEntityState> {
 
   FileListStateNotifier() : super(const FileEntityWaitingForInput());
 
-  void emitFiles(List<String> directoryPaths) async {
+  void emitFiles(List<String> directoryPaths, int depth) async {
     state = const FileEntityLoading();
     List<String> files = [];
     for (String directory in directoryPaths) {
-      files.addAll(await _getFileEntityPath(directory, FileSystemEntityType.file, 0));
+      files.addAll(await getFileEntityPath(directory, FileSystemEntityType.file, depth));
     }
     state = FileEntityLoadedState(fileEntities: files, type: FileSystemEntityType.file);
+  }
+
+  void reset() {
+    state = const FileEntityWaitingForInput();
   }
 }
 
@@ -30,16 +34,26 @@ class DirectoryListStateNotifier extends StateNotifier<FileEntityState> {
 
   final Ref ref;
 
-  Future<List<String>> emitDirectories(String rootPath, int depth) async {
+  Future<List<String>> emitDirectories({
+    required String rootPath, 
+    required int depth,
+    bool shouldRefreshFiles = true
+  }) async {
     state = const FileEntityLoading();
-    List<String> fileEntityPaths = await _getFileEntityPath(rootPath, FileSystemEntityType.directory, depth);
+    List<String> fileEntityPaths = await getFileEntityPath(rootPath, FileSystemEntityType.directory, depth);
     state = FileEntityLoadedState(fileEntities: fileEntityPaths, type: FileSystemEntityType.directory);
-    ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths);
+    if (shouldRefreshFiles) {
+      ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths, depth);
+    }
     return fileEntityPaths;
+  }
+
+  void reset() {
+    state = const FileEntityWaitingForInput();
   }
 }
 
-Future<List<String>> _getFileEntityPath(
+Future<List<String>> getFileEntityPath(
   String rootPath, 
   FileSystemEntityType fileEntityType, 
   int depth
@@ -54,7 +68,7 @@ Future<List<String>> _getFileEntityPath(
   if (depth > 0 && directories.isNotEmpty) {
     for (Directory directory in directories) {
       entities.addAll(
-        (await _getFileEntityPath(directory.path, fileEntityType, depth-1))
+        (await getFileEntityPath(directory.path, fileEntityType, depth-1))
         .map((e) {
           switch (fileEntityType) {
             case FileSystemEntityType.directory:

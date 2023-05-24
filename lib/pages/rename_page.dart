@@ -49,13 +49,12 @@ class _RenamePageState extends ConsumerState<RenamePage> {
 
   void onRootDirectorySelected(String rootPath) {
     _rootPath = rootPath;
-    ref.read(fileListStateProvider.notifier).emitFiles([rootPath]);
-    ref.read(directoryListStateProvider.notifier).emitDirectories(rootPath, 0);
+    ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
   }
 
   void refreshFiles() async {
     if (_rootPath != null) {
-      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!]);
+      ref.read(fileListStateProvider.notifier).emitFiles([_rootPath!], 0);
     }
   }
 
