@@ -1,4 +1,4 @@
-import 'package:filekraken/model/modifer_parser.dart';
+import 'package:filekraken/service/modifer_parser.dart';
 import 'package:test/test.dart';
 import 'package:flutter/foundation.dart';
 

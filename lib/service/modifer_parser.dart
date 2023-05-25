@@ -1,5 +1,5 @@
 import 'package:petitparser/petitparser.dart';
-import 'filename_limitations.dart';
+import '../model/filename_limitations.dart';
 
 class PathModifierOptions {
   PathModifierOptions({

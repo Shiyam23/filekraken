@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
-import '../model/modifer_parser.dart';
+import '../service/modifer_parser.dart';
 
 class CreatePage extends ConsumerStatefulWidget {
   const CreatePage({super.key});
