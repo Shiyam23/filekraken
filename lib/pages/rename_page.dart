@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:filekraken/components/titlebar/variable_widget.dart';
+import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
@@ -78,11 +80,12 @@ class _RenamePageState extends ConsumerState<RenamePage> {
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
+    Map<String, Variable> variables = ref.read(variableListProvider);
     for (int i = 0; i < _selectedFiles!.length; i++) {
       String selectedFilePath = _selectedFiles![i];
       String fileBasename = basenameWithoutExtension(selectedFilePath);
       String fileExtension = extension(selectedFilePath);
-      String newFileName = modifyName(fileBasename, i, config, {"s":""});
+      String newFileName = modifyName(fileBasename, i, config, variables);
       String newFilePath = join(dirname(selectedFilePath), newFileName+fileExtension);
       File oldFile = File(selectedFilePath);
       await oldFile.rename(newFilePath);

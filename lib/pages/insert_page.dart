@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:filekraken/components/titlebar/variable_widget.dart';
+import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
@@ -86,6 +88,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
 
   void insertFiles() async {
     String rootPath = ref.read(rootDirectoryProvider);
+    Map<String, Variable> variables = ref.read(variableListProvider);
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
@@ -130,7 +133,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       for (int i = 0; i < _selectedFiles!.length; i++) {
         String selectedFilePath = _selectedFiles![i];
         String fileBasename = basenameWithoutExtension(selectedFilePath);
-        String directoryName = modifyName(fileBasename, i, pathModifierConfig, {"s":""});
+        String directoryName = modifyName(fileBasename, i, pathModifierConfig, variables);
         String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
         Directory newDirectory = Directory(newDirectoryPath);
         if (!await newDirectory.exists()) {

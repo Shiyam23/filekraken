@@ -1,3 +1,4 @@
+import 'package:filekraken/model/list_variable.dart';
 import 'package:petitparser/petitparser.dart';
 import '../model/filename_limitations.dart';
 
@@ -31,16 +32,16 @@ class NameGeneratorConfig {
 }
 
 final noBrackets = anyOf("[]$forbiddenCharacters").neg();
-final identifier = anyOf("[]d$forbiddenCharacters").neg();
+final identifier = anyOf("[]$forbiddenCharacters").neg();
 final escapedPar = (char('\\') & anyOf("[]"));
-final deleteVariable = string("[d]").end().map((value) => "");
-
+//final deleteVariable = string("[d]").end().map((value) => "");
+final identifierSyntax = (char("[") & identifier.plus() & char("]")).end();
 
 String modifyName(
   String origin, 
   int index, 
   PathModifierConfig config,
-  Map<String, String> variables
+  Map<String, Variable> variables
 ) {
   _validateOrder(config);
   int lastIndex = 0;
@@ -98,7 +99,7 @@ String evaluateModifier(
   String match,
   String? modifier,
   int index,
-  Map<String, String> variables
+  Map<String, Variable> variables
 ) {
   if (modifier == null || modifier == "") return match;
   final variable = (
@@ -109,7 +110,7 @@ String evaluateModifier(
     & char(']').map((value) => "")
   ).map((value) => value.join());
   final term = escapedPar.flatten() | noBrackets | variable;
-  final expression = deleteVariable | term.star().map((value) => value.join()).end();
+  final expression = term.star().map((value) => value.join()).end();
   final result = expression.parse(modifier);
   if (result.isFailure) {
     throw ArgumentError("Invalid modifier");
@@ -120,7 +121,7 @@ String evaluateModifier(
 String applyVariables({
   required String content,
   required int index,
-  required Map<String, String> variables
+  required Map<String, Variable> variables
 }) {
   final variable = (
     char('[').map((value) => "")
@@ -141,7 +142,7 @@ String applyVariables({
 String? _evaluateListVariable(
   String identifier, 
   int index, 
-  Map<String, String> variables
+  Map<String, Variable> variables
 ) {
   int? charIndex = int.tryParse(identifier);
   if (charIndex != null) {
@@ -150,11 +151,8 @@ String? _evaluateListVariable(
       "CharIndex value not allowed here"
     );
   }
-  if (identifier == "i") {
-    return index.toString();
-  }
   if (variables.containsKey(identifier)) {
-    return variables[identifier]!;
+    return variables[identifier]!.getValue(index);
   }
   return null;
 }
@@ -163,7 +161,7 @@ String _evaluateVariable(
   String origin, 
   String identifier, 
   int index, 
-  Map<String, String> variables
+  Map<String, Variable> variables
 ) {
   int? charIndex = int.tryParse(identifier);
   if (charIndex != null) {
@@ -175,9 +173,9 @@ String _evaluateVariable(
     }
     return origin[charIndex-1];
   }
-  String? listVariable = _evaluateListVariable(identifier, index, variables);
-  if (listVariable != null) {
-    return listVariable;
+  String? variable = _evaluateListVariable(identifier, index, variables);
+  if (variable != null) {
+    return variable;
   }
   final Parser startIndex = digit().plus().flatten().trim().map(int.parse);
   final Parser dash = char("-").map((value) => "");
@@ -214,3 +212,7 @@ String _evaluateVariable(
   );
 }
 
+String? checkIdentifierSyntax(String userInput) {
+  Result result = identifierSyntax.parse(userInput);
+  return result.isSuccess ? null : result.message;
+}

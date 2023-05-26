@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:filekraken/model/file_content.dart';
+import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
+import '../components/titlebar/variable_widget.dart';
 import '../service/modifer_parser.dart';
 
 class CreatePage extends ConsumerStatefulWidget {
@@ -56,7 +58,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
       // TODO: Show error dialog
       return;
     }
-    Map<String, String> variables = {"s": "d"};
+    Map<String, Variable> variables = ref.read(variableListProvider);
     ContentMode mode = fileContent.mode;
     for (int i = 0; i < config.numberFiles; i++) {
       String generatedName = applyVariables(

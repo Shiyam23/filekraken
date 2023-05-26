@@ -1,15 +1,27 @@
+import 'package:filekraken/components/titlebar/variable_widget.dart';
+import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/modifer_parser.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
   setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.macOS);
+  final container = ProviderContainer(
+    overrides: [
+      variableListProvider.overrideWith((ref) => VariableListMockNotifier({
+        "i": IndexVariable(),
+        "d": DeleteVariable(),
+        "s": ListVariable(name: "Test", identifier: "s", content: ["d"], loop: true)
+      }))
+    ]
+  );
+  var variables = container.read(variableListProvider);
   group('Modifier evaluation', () {
     test('Swap characters', () {
       String match = "hello";
       String modifier = "[2][1][3][4][5]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "ehllo");
     });
@@ -18,7 +30,6 @@ void main() {
       String match = "hello";
       String modifier = "[d]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "");
     });
@@ -27,7 +38,6 @@ void main() {
       String match = "hello";
       String modifier = "test";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "test");
     });
@@ -36,7 +46,6 @@ void main() {
       String match = "hello";
       String modifier = "he[s]lo";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "hedlo");
     });
@@ -45,7 +54,6 @@ void main() {
       String match = "hello";
       String modifier = "he\\[slo";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "he\\[slo");
     });
@@ -54,7 +62,6 @@ void main() {
       String match = "hello";
       String modifier = "he\\[lo[s]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "he\\[lod");
     });
@@ -63,7 +70,6 @@ void main() {
       String match = "hello";
       String modifier = "[1][2][10]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<RangeError>()));
     });
@@ -72,7 +78,6 @@ void main() {
       String match = "hello";
       String modifier = "[-1][2][3]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -81,7 +86,6 @@ void main() {
       String match = "hello";
       String modifier = "[[test]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -90,7 +94,6 @@ void main() {
       String match = "hello";
       String modifier = "[test]]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -99,7 +102,6 @@ void main() {
       String match = "hello";
       String modifier = "\\[test]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -108,7 +110,6 @@ void main() {
       String match = "hello";
       String modifier = "[test\\]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -117,7 +118,6 @@ void main() {
       String match = "hello";
       String modifier = "[[test]]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -126,25 +126,22 @@ void main() {
       String match = "hello";
       String modifier = "hell[]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
     
-    test('Fails on mixing delete and character modifier', () {
+    test('Mixing delete and character modifier', () {
       String match = "hello";
       String modifier = "[d]test";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateF, throwsA(isA<ArgumentError>()));
+      String result = evaluateModifier(match, modifier, index, variables);
+      expect("test", result);
     });
 
     test('Fails on non-existing variable', () {
       String match = "hello";
       String modifier = "he[l]lo";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       evaluateF() => evaluateModifier(match, modifier, index, variables);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
@@ -153,14 +150,12 @@ void main() {
       String match = "hello";
       String modifier = "hello[i]";
       int index = 0;
-      Map<String, String> variables = {"s": "d"};
       String result = evaluateModifier(match, modifier, index, variables);
       expect(result, "hello0");
     });
   });
   
   group('Name modifier', () {
-    Map<String, String> variables = {"s": "d"};
     int index = 0;
     test("Replace subwords", () {
       PathModifierConfig config = PathModifierConfig(
@@ -312,4 +307,13 @@ void main() {
       expect(result, "3-2-1");
     });
   });
+}
+
+class VariableListMockNotifier extends StateNotifier<Map<String, Variable>> implements VariableListNotifier {
+  VariableListMockNotifier(
+    Map<String, Variable> variables
+  ) : super(variables);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -1,8 +1,7 @@
 import 'dart:io';
-
+import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
-
 
 class TitleBar extends StatelessWidget {
   
@@ -18,21 +17,17 @@ class TitleBar extends StatelessWidget {
       height: height,
       child: WindowTitleBarBox(
         child: Container(
+          padding: Platform.isMacOS ? const EdgeInsets.only(left: 70) : EdgeInsets.zero,
           color: const Color(0xFF18212B),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const VariableButton(),
               Expanded(
                 child: MoveWindow(
                   child: Container(
                     padding: const EdgeInsets.only(left: 15.0),
                     alignment: Platform.isMacOS ? Alignment.center : Alignment.centerLeft,
-                    child: const Text(
-                      "App", 
-                      style: TextStyle(
-                        color: Colors.white,
-                      )
-                    ),
                   ),
                 )
               ),
