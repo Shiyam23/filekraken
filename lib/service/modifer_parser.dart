@@ -126,7 +126,15 @@ String applyVariables({
   final variable = (
     char('[').map((value) => "")
     & identifier.plus().flatten().map((value) {
-      return _evaluateListVariable(value, index, variables);
+      String? evaluation = _evaluateListVariable(value, index, variables);
+      if (evaluation != null) {
+        return evaluation;
+      }
+      throw MissingVariableException(
+        content: content,
+        value: value,
+        index: index,
+      );
     }) 
     & char(']').map((value) => "")
   ).map((value) => value.join());
@@ -138,6 +146,7 @@ String applyVariables({
   }
   return result.value;
 }
+
 
 String? _evaluateListVariable(
   String identifier, 
@@ -208,11 +217,11 @@ String _evaluateVariable(
   throw ArgumentError.value(
     identifier, 
     "value", 
-    "Either value has to be a number or it must be contained in variables."
+    "Value has to be either a number, a range or a variable."
   );
 }
 
 String? checkIdentifierSyntax(String userInput) {
-  Result result = identifierSyntax.parse(userInput);
+  Result result = noBrackets.plus().end().parse(userInput);
   return result.isSuccess ? null : result.message;
 }

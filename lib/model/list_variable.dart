@@ -54,3 +54,16 @@ class DeleteVariable extends Variable{
   @override
   String getValue(int index) => "";
 }
+
+class MissingVariableException{
+
+  MissingVariableException({
+    required this.content,
+    required this.value,
+    required this.index
+  });
+
+  final String content;
+  final String value;
+  final int index;
+}

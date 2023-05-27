@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
@@ -40,7 +41,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: ElevatedButton(
-            onPressed: createFiles, 
+            onPressed: () => createFiles(context), 
             child: const Text("Create!")
           ),
         )
@@ -52,7 +53,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
     ref.read(rootDirectoryProvider.notifier).state = rootPath;
   }
 
-  void createFiles() async {
+  void createFiles(BuildContext context) async {
     String rootPath = ref.read(rootDirectoryProvider);
     if (rootPath == "") {
       // TODO: Show error dialog
@@ -61,11 +62,22 @@ class _CreatePageState extends ConsumerState<CreatePage> {
     Map<String, Variable> variables = ref.read(variableListProvider);
     ContentMode mode = fileContent.mode;
     for (int i = 0; i < config.numberFiles; i++) {
-      String generatedName = applyVariables(
+      String generatedName;
+      try {
+        generatedName = applyVariables(
         content: config.nameGenerator, 
         index: i, 
         variables: variables
-      );
+        );
+      } on MissingVariableException catch (e) {
+        showDialog(
+          context: context, 
+          builder: (context) => MissingVariableErrorDialog(
+            exception: e
+          )
+        );
+        break;
+      }
       switch (mode) {
         case ContentMode.text: {
           if (fileContent.textContent == null) {
