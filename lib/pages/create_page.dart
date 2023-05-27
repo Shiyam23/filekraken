@@ -76,7 +76,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
             exception: e
           )
         );
-        break;
+        return;
       }
       switch (mode) {
         case ContentMode.text: {
@@ -85,11 +85,20 @@ class _CreatePageState extends ConsumerState<CreatePage> {
             return;
           }
           String textContent = fileContent.textContent!;
-          String modifiedContent = applyVariables(
-            content: textContent, 
-            index: i, 
-            variables: variables
-          );
+          String modifiedContent;
+          try {
+            modifiedContent = applyVariables(
+              content: textContent, 
+              index: i, 
+              variables: variables
+            );
+          } on MissingVariableException catch (e) {
+            showDialog(
+              context: context, 
+              builder: (context) => MissingVariableErrorDialog(exception: e)
+            );
+            return;
+          }
           File newFile = File(join(rootPath, "$generatedName.txt"));
           if (!await newFile.exists()) {
             await newFile.create();
