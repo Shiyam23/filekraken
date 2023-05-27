@@ -86,12 +86,17 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
   Widget build(BuildContext context) {
     return Unit(
       title: "Select root folder",
-      content: Column(
+      content: Table(
+        columnWidths: const {
+          0: FixedColumnWidth(100),
+          1: FlexColumnWidth()
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
-          Row(
+          TableRow(
             children: [
               const Text("Folder path"),
-              Expanded(child: Padding(
+              Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
                 child: TextField(
                   controller: _controller,
@@ -110,36 +115,41 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
                     )
                   ),
                 ),
-              )),
-            ],
-          ),
-          widget.depth == null ? const SizedBox.shrink() : Row(
-            children: [
-              const Text("Depth"),
-              SizedBox(
-                width: 230,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                  child: TextFormField(
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly
-                    ],
-                    textAlign: TextAlign.center,
-                    initialValue: widget.depth!.value.toString(),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: _validateDepth,
-                    onChanged: _onChange,
-                    decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      ),
-                    ),
-                  ),
-                )
               ),
             ],
           ),
-
+          if (widget.depth != null) TableRow(
+            children: [
+              const Text("Depth"),
+              TableCell(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        child: TextFormField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          textAlign: TextAlign.center,
+                          initialValue: widget.depth!.value.toString(),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: _validateDepth,
+                          onChanged: _onChange,
+                          decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       )
     );
