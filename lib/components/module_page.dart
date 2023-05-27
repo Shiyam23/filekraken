@@ -127,7 +127,7 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 200,
+                        width: 80,
                         child: TextFormField(
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly
