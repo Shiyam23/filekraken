@@ -774,12 +774,16 @@ class NameGeneratorUnit extends StatelessWidget {
       title: "Choose name for files",
       content: Column(
         children: [
-          Column(
+          Table(
+            columnWidths: const {
+              0: FixedColumnWidth(100)
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [
-              Row(
+              TableRow(
                 children: [
                   const Text("Generator: "),
-                  Expanded(child: Padding(
+                  Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
                     child: TextFormField(
                       initialValue: config.nameGenerator,
@@ -790,32 +794,36 @@ class NameGeneratorUnit extends StatelessWidget {
                         ),
                       ),
                     ),
-                  )),
+                  ),
                 ],
               ),
-              Row(
+              TableRow(
                 children: [
                   const Text("Number of files"),
-                  SizedBox(
-                    width: 230,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                      child: TextFormField(
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        textAlign: TextAlign.center,
-                        initialValue: config.numberFiles.toString(),
-                        onChanged: (value) {
-                          config.numberFiles = int.parse(value);
-                        },
-                        decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                        child: SizedBox(
+                          width: 80,
+                          child: TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            textAlign: TextAlign.center,
+                            initialValue: config.numberFiles.toString(),
+                            onChanged: (value) {
+                              config.numberFiles = int.parse(value);
+                            },
+                            decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20)),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    )
+                    ],
                   ),
                 ],
               ),
