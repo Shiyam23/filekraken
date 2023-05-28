@@ -1,16 +1,21 @@
+import 'package:isar/isar.dart';
+
+part 'list_variable.g.dart';
+
 abstract class Variable {
   Variable({
     required this.identifier,
     required this.name,
   });
-  String identifier;
-  String name;
+  final String identifier;
+  final String name;
 
   String getValue(int index);
 
   String getDescription();
 }
 
+@collection
 class ListVariable extends Variable{
   ListVariable({
     required this.content,
@@ -18,8 +23,10 @@ class ListVariable extends Variable{
     required super.name,
     required this.loop
   });
-  List<String> content;
-  bool loop;
+
+  Id id = Isar.autoIncrement;
+  final List<String> content;
+  final bool loop;
 
   @override
   String getDescription() => content.join(", ");

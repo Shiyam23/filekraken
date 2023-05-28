@@ -1,34 +1,59 @@
 import 'package:filekraken/model/list_variable.dart';
+import 'package:filekraken/service/database.dart';
 import 'package:filekraken/service/modifer_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-StateNotifierProvider<VariableListNotifier,Map<String,Variable>> variableListProvider = StateNotifierProvider(
-  (ref) => VariableListNotifier()
+final variableListProvider = StateNotifierProvider<VariableListNotifier,Map<String,Variable>>(
+  (ref) => VariableListNotifier(ref)..init()
 );
 
 class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
-  VariableListNotifier() : super({
+  VariableListNotifier(this.ref) : super(predefinedVariables);
+
+  final StateNotifierProviderRef ref;
+  static Map<String, Variable> predefinedVariables = {
     "i": IndexVariable(),
     "d": DeleteVariable(),
-  });
+  };
 
-  void addVariable(ListVariable variable) {
+  void init() async {
+    _refresh();
+    ref.read(database).onListVariableChange().listen((event) {
+      _refresh();
+    });
+  }
+
+  void addVariable(ListVariable variable) async {
+    await ref.read(database).addListVariable(variable);
     state = {...state, variable.identifier: variable};
   }
 
-  void removeVariable(ListVariable variable) {
+  void removeVariable(ListVariable variable) async {
+    await ref.read(database).deleteListVariable(variable);
     state = {
       for (MapEntry element in state.entries) 
       if (element.value != variable) element.key:element.value
     };
   }
 
-  void modify(ListVariable oldVariable, ListVariable newVariable) {
+  void modify(ListVariable oldVariable, ListVariable newVariable) async {
+    if (oldVariable.id != newVariable.id) {
+      throw ArgumentError("Id of both variables must be identical");
+    }
+    await ref.read(database).modifyListVariable(oldVariable, newVariable);
     state = {
       for (MapEntry element in state.entries) 
         if (element.value != oldVariable) element.key : element.value
         else newVariable.identifier : newVariable
+    };
+  }
+
+  void _refresh() async{
+    final listVariables = await ref.read(database).getListVariables();
+    state = {
+      ...predefinedVariables,
+      for (ListVariable lv in listVariables) lv.identifier: lv
     };
   }
 }
@@ -133,6 +158,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
       )
     );
     if (result != null) {
+      result.id = e.id;
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.modify(e, result);
     }

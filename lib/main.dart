@@ -1,3 +1,4 @@
+import 'package:filekraken/service/database.dart';
 import 'package:filekraken/theme/fk_dark_theme.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,13 @@ import 'layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+
+  ProviderContainer container = ProviderContainer();
+  runApp(UncontrolledProviderScope(
+    container: container,
+    child: const MyApp(),
+  ));
+  container.read(database).init();
 
   doWhenWindowReady(() {
     const initialSize = Size(1080, 720);

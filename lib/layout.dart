@@ -8,7 +8,7 @@ class Layout extends StatelessWidget {
   Layout({super.key});
 
   final double titlebarHeight = 50;
-  final ValueNotifier<int> _pageIndex = ValueNotifier(0);
+  final ValueNotifier<int> _pageIndex = ValueNotifier(2);
 
   @override
   Widget build(BuildContext context) {
