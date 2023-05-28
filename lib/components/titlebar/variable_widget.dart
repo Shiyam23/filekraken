@@ -174,6 +174,7 @@ class _ListVariableEditState extends State<ListVariableEdit> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   late bool loop = widget.initialLoop ?? false;
+  final GlobalKey<FormState> _formKey = GlobalKey();
 
   @override
   void initState() {
@@ -188,72 +189,84 @@ class _ListVariableEditState extends State<ListVariableEdit> {
     return Dialog(
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextFormField(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (value) {
-                if (value == null || value == "") {
-                  return "Can not be empty";
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Column(
+            children: [
+              TextFormField(
+                validator: (value) {
+                  if (value == null || value == "") {
+                    return "Can not be empty";
+                  }
+                  return null;
+                },
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder()
+                ),
+              ),
+              TextFormField(
+                validator: (value) {
+                  if (value == null || value == "") {
+                    return "Can not be empty";
+                  }
+                  return checkIdentifierSyntax(value);
+                },
+                controller: _idController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder()
+                ),
+              ),
+              TextFormField(
+                validator: (value) {
+                  if (value == null || value == "") {
+                    return "Can not be empty";
+                  }
+                  return null;
+                },
+                controller: _contentController,
+                keyboardType: TextInputType.multiline,
+                minLines: 5,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder()
+                ),
+              ),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return Checkbox(
+                    value: loop,
+                    onChanged: (value) => setState(() => loop = value!)
+                  );
                 }
-                return null;
-              },
-              controller: _nameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder()
               ),
-            ),
-            TextFormField(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (value) {
-                if (value == null || value == "") {
-                  return "Can not be empty";
-                }
-                return checkIdentifierSyntax(value);
-              },
-              controller: _idController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder()
-              ),
-            ),
-            TextFormField(
-              controller: _contentController,
-              keyboardType: TextInputType.multiline,
-              minLines: 5,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder()
-              ),
-            ),
-            StatefulBuilder(
-              builder: (context, setState) {
-                return Checkbox(
-                  value: loop,
-                  onChanged: (value) => setState(() => loop = value!)
-                );
-              }
-            ),
-            Row(
-              children: [
-                TextButton(
-                  child: const Text("Submit"),
-                  onPressed: () => Navigator.pop<ListVariable>(
-                    context,
-                    ListVariable(
-                      content: _contentController.text.trim().split("\n"),
-                      identifier: _idController.text,
-                      name: _nameController.text,
-                      loop: loop
-                    )
+              Row(
+                children: [
+                  TextButton(
+                    child: const Text("Submit"),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        return Navigator.pop<ListVariable>(
+                          context,
+                          ListVariable(
+                            content: _contentController.text.trim().split("\n"),
+                            identifier: _idController.text,
+                            name: _nameController.text,
+                            loop: loop
+                          )
+                        );
+                      }
+                    },
                   ),
-                ),
-                TextButton(
-                  child: const Text("Cancel"),
-                  onPressed: () => Navigator.pop<ListVariable>(context,null),
-                ),
-              ],
-            )
-          ],
+                  TextButton(
+                    child: const Text("Cancel"),
+                    onPressed: () => Navigator.pop<ListVariable>(context,null),
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
