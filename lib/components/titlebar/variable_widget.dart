@@ -109,6 +109,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
                   DataColumn(label: Text("Name")),
                   DataColumn(label: Text("Identifier")),
                   DataColumn(label: Text("Description")),
+                  DataColumn(label: Text("")),
                 ], 
                 rows: variableList.map((e) => DataRow(
                   onSelectChanged: (_) => modifyVariable(context, e),
@@ -123,6 +124,13 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
                     ),
                     DataCell(
                       Text(e.getDescription()),
+                      placeholder: e is IndexVariable || e is DeleteVariable
+                    ),
+                    DataCell(
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => deleteVariable(e),
+                      ),
                       placeholder: e is IndexVariable || e is DeleteVariable
                     ),
                   ]
@@ -169,6 +177,12 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.addVariable(newVariable);
     }
+  }
+
+  void deleteVariable(Variable selectedVariable) async {
+    if (selectedVariable is! ListVariable) return;
+    VariableListNotifier notifier = ref.read(variableListProvider.notifier);
+    notifier.removeVariable(selectedVariable);
   }
 }
 
