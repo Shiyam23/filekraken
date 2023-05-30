@@ -111,30 +111,33 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
                   DataColumn(label: Text("Description")),
                   DataColumn(label: Text("")),
                 ], 
-                rows: variableList.map((e) => DataRow(
-                  onSelectChanged: (_) => modifyVariable(context, e),
+                rows: variableList.map((e) {
+                  bool isPredefined = e is IndexVariable || e is DeleteVariable;
+                  return DataRow(
+                  onSelectChanged: isPredefined ? null : (_) => modifyVariable(context, e),
                   cells: [
                     DataCell(
                       Text(e.name), 
-                      placeholder: e is IndexVariable || e is DeleteVariable
+                      placeholder: isPredefined
                     ),
                     DataCell(
                       Text("[${e.identifier}]"),
-                      placeholder: e is IndexVariable || e is DeleteVariable
+                      placeholder: isPredefined
                     ),
                     DataCell(
                       Text(e.getDescription()),
-                      placeholder: e is IndexVariable || e is DeleteVariable
+                      placeholder: isPredefined
                     ),
                     DataCell(
-                      IconButton(
+                      isPredefined ? const SizedBox.shrink() : IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () => deleteVariable(e),
                       ),
-                      placeholder: e is IndexVariable || e is DeleteVariable
+                      placeholder: isPredefined
                     ),
                   ]
-                )).toList()
+                );
+                }).toList()
               ),
             ),
             Container(
@@ -152,7 +155,9 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   }
 
   void modifyVariable(BuildContext context, Variable e) async {
-    if (e is! ListVariable) return;
+    if (e is! ListVariable) {
+      throw ArgumentError.value(e, "e", "e is not a ListVariable");
+    };
     ListVariableData? result = await showDialog<ListVariableData>(
       context: context, 
       builder: (context) => ListVariableEdit(
@@ -186,7 +191,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   }
 }
 
-class ListVariableEdit extends StatefulWidget {
+class ListVariableEdit extends ConsumerStatefulWidget {
   const ListVariableEdit({
     this.initialName, 
     this.initialIdentifier, 
@@ -201,16 +206,18 @@ class ListVariableEdit extends StatefulWidget {
   final bool? initialLoop;
 
   @override
-  State<ListVariableEdit> createState() => _ListVariableEditState();
+  ConsumerState<ListVariableEdit> createState() => _ListVariableEditState();
 }
 
-class _ListVariableEditState extends State<ListVariableEdit> {
+class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   late bool loop = widget.initialLoop ?? false;
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final GlobalKey<FormFieldState> _identifierFieldKey = GlobalKey();
+  String? errorMessage;
 
   @override
   void initState() {
@@ -227,40 +234,26 @@ class _ListVariableEditState extends State<ListVariableEdit> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
+          autovalidateMode: AutovalidateMode.disabled,
           child: Column(
             children: [
               TextFormField(
-                validator: (value) {
-                  if (value == null || value == "") {
-                    return "Can not be empty";
-                  }
-                  return null;
-                },
+                validator: checkEmpty,
                 controller: _nameController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder()
                 ),
               ),
               TextFormField(
-                validator: (value) {
-                  if (value == null || value == "") {
-                    return "Can not be empty";
-                  }
-                  return checkIdentifierSyntax(value);
-                },
+                key: _identifierFieldKey,
+                validator: (value) => checkIdentifier(value),
                 controller: _idController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder()
                 ),
               ),
               TextFormField(
-                validator: (value) {
-                  if (value == null || value == "") {
-                    return "Can not be empty";
-                  }
-                  return null;
-                },
+                validator: checkEmpty,
                 controller: _contentController,
                 keyboardType: TextInputType.multiline,
                 minLines: 5,
@@ -314,5 +307,25 @@ class _ListVariableEditState extends State<ListVariableEdit> {
     _contentController.dispose();
     _idController.dispose();
     super.dispose();
+  }
+
+  String? checkEmpty(String? value) {
+    if (value == null || value == "") {
+      return "Can not be empty";
+    }
+    return null;
+  }
+
+  String? checkIdentifier(String? value) {
+    if (value == null || value == "") {
+      return "Can not be empty";
+    }
+    String? syntaxError = checkIdentifierSyntax(value);
+    if (syntaxError != null) {
+      return syntaxError;
+    }
+    bool identifierExists = ref.read(variableListProvider).containsKey(value);
+    bool identifierChanged = value != widget.initialIdentifier;
+    return identifierExists && identifierChanged ? "Identifier already exists" : null;
   }
 }
