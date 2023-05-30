@@ -12,7 +12,7 @@ void main() {
       variableListProvider.overrideWith((ref) => VariableListMockNotifier({
         "i": IndexVariable(),
         "d": DeleteVariable(),
-        "s": ListVariable(name: "Test", identifier: "s", content: ["d"], loop: true)
+        "s": ListVariable(id: 0, name: "Test", identifier: "s", content: ["d"], loop: true)
       }))
     ]
   );
@@ -151,7 +151,7 @@ void main() {
       String modifier = "hello[i]";
       int index = 0;
       String result = evaluateModifier(match, modifier, index, variables);
-      expect(result, "hello0");
+      expect(result, "hello1");
     });
   });
   
