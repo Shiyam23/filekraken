@@ -24,9 +24,9 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
     });
   }
 
-  void addVariable(ListVariable variable) async {
-    await ref.read(database).addListVariable(variable);
-    state = {...state, variable.identifier: variable};
+  void addVariable(ListVariableData variable) async {
+    ListVariable newVariable = await ref.read(database).addListVariable(variable);
+    state = {...state, newVariable.identifier: newVariable};
   }
 
   void removeVariable(ListVariable variable) async {
@@ -37,11 +37,8 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
     };
   }
 
-  void modify(ListVariable oldVariable, ListVariable newVariable) async {
-    if (oldVariable.id != newVariable.id) {
-      throw ArgumentError("Id of both variables must be identical");
-    }
-    await ref.read(database).modifyListVariable(oldVariable, newVariable);
+  void modify(ListVariable oldVariable, ListVariableData newData) async {
+    ListVariable newVariable = await ref.read(database).modifyListVariable(oldVariable, newData);
     state = {
       for (MapEntry element in state.entries) 
         if (element.value != oldVariable) element.key : element.value
@@ -148,7 +145,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
 
   void modifyVariable(BuildContext context, Variable e) async {
     if (e is! ListVariable) return;
-    ListVariable? result = await showDialog<ListVariable>(
+    ListVariableData? result = await showDialog<ListVariableData>(
       context: context, 
       builder: (context) => ListVariableEdit(
         initialName: e.name,
@@ -158,14 +155,13 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
       )
     );
     if (result != null) {
-      result.id = e.id;
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.modify(e, result);
     }
   }
 
   void addVariable(BuildContext context) async {
-    ListVariable? newVariable = await showDialog<ListVariable>(
+    ListVariableData? newVariable = await showDialog<ListVariableData>(
       context: context, 
       builder: (_) => const ListVariableEdit()
     );
@@ -273,9 +269,9 @@ class _ListVariableEditState extends State<ListVariableEdit> {
                     child: const Text("Submit"),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        return Navigator.pop<ListVariable>(
+                        return Navigator.pop<ListVariableData>(
                           context,
-                          ListVariable(
+                          ListVariableData(
                             content: _contentController.text.trim().split("\n"),
                             identifier: _idController.text,
                             name: _nameController.text,

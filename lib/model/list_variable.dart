@@ -1,7 +1,3 @@
-import 'package:isar/isar.dart';
-
-part 'list_variable.g.dart';
-
 abstract class Variable {
   Variable({
     required this.identifier,
@@ -15,16 +11,16 @@ abstract class Variable {
   String getDescription();
 }
 
-@collection
 class ListVariable extends Variable{
   ListVariable({
     required this.content,
     required super.identifier,
     required super.name,
-    required this.loop
+    required this.loop,
+    required this.id
   });
 
-  Id id = Isar.autoIncrement;
+  int id;
   final List<String> content;
   final bool loop;
 
@@ -40,6 +36,21 @@ class ListVariable extends Variable{
     }
     return "";
   }
+}
+
+class ListVariableData {
+
+  ListVariableData({
+    required this.identifier, 
+    required this.name, 
+    required this.content, 
+    required this.loop
+  });
+
+  final String identifier;
+  final String name;
+  final List<String> content;
+  final bool loop;
 }
 
 class IndexVariable extends Variable{

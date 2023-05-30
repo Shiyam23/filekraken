@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'list_variable.dart';
+part of 'isar_list_variable.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'list_variable.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetListVariableCollection on Isar {
-  IsarCollection<ListVariable> get listVariables => this.collection();
+extension GetListVariableDAOCollection on Isar {
+  IsarCollection<ListVariableDAO> get listVariableDAOs => this.collection();
 }
 
-const ListVariableSchema = CollectionSchema(
-  name: r'ListVariable',
-  id: -1453494832151369117,
+const ListVariableDAOSchema = CollectionSchema(
+  name: r'ListVariableDAO',
+  id: 5323341435343668622,
   properties: {
     r'content': PropertySchema(
       id: 0,
@@ -38,22 +38,22 @@ const ListVariableSchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _listVariableEstimateSize,
-  serialize: _listVariableSerialize,
-  deserialize: _listVariableDeserialize,
-  deserializeProp: _listVariableDeserializeProp,
+  estimateSize: _listVariableDAOEstimateSize,
+  serialize: _listVariableDAOSerialize,
+  deserialize: _listVariableDAODeserialize,
+  deserializeProp: _listVariableDAODeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
-  getId: _listVariableGetId,
-  getLinks: _listVariableGetLinks,
-  attach: _listVariableAttach,
+  getId: _listVariableDAOGetId,
+  getLinks: _listVariableDAOGetLinks,
+  attach: _listVariableDAOAttach,
   version: '3.1.0+1',
 );
 
-int _listVariableEstimateSize(
-  ListVariable object,
+int _listVariableDAOEstimateSize(
+  ListVariableDAO object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -70,8 +70,8 @@ int _listVariableEstimateSize(
   return bytesCount;
 }
 
-void _listVariableSerialize(
-  ListVariable object,
+void _listVariableDAOSerialize(
+  ListVariableDAO object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -82,23 +82,23 @@ void _listVariableSerialize(
   writer.writeString(offsets[3], object.name);
 }
 
-ListVariable _listVariableDeserialize(
+ListVariableDAO _listVariableDAODeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ListVariable(
+  final object = ListVariableDAO(
     content: reader.readStringList(offsets[0]) ?? [],
+    id: id,
     identifier: reader.readString(offsets[1]),
     loop: reader.readBool(offsets[2]),
     name: reader.readString(offsets[3]),
   );
-  object.id = id;
   return object;
 }
 
-P _listVariableDeserializeProp<P>(
+P _listVariableDAODeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -118,31 +118,30 @@ P _listVariableDeserializeProp<P>(
   }
 }
 
-Id _listVariableGetId(ListVariable object) {
+Id _listVariableDAOGetId(ListVariableDAO object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _listVariableGetLinks(ListVariable object) {
+List<IsarLinkBase<dynamic>> _listVariableDAOGetLinks(ListVariableDAO object) {
   return [];
 }
 
-void _listVariableAttach(
-    IsarCollection<dynamic> col, Id id, ListVariable object) {
-  object.id = id;
-}
+void _listVariableDAOAttach(
+    IsarCollection<dynamic> col, Id id, ListVariableDAO object) {}
 
-extension ListVariableQueryWhereSort
-    on QueryBuilder<ListVariable, ListVariable, QWhere> {
-  QueryBuilder<ListVariable, ListVariable, QAfterWhere> anyId() {
+extension ListVariableDAOQueryWhereSort
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QWhere> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension ListVariableQueryWhere
-    on QueryBuilder<ListVariable, ListVariable, QWhereClause> {
-  QueryBuilder<ListVariable, ListVariable, QAfterWhereClause> idEqualTo(Id id) {
+extension ListVariableDAOQueryWhere
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QWhereClause> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -151,8 +150,8 @@ extension ListVariableQueryWhere
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhereClause>
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -174,9 +173,8 @@ extension ListVariableQueryWhere
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhereClause>
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -184,7 +182,8 @@ extension ListVariableQueryWhere
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterWhereClause> idLessThan(Id id,
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhereClause> idLessThan(
+      Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -193,7 +192,7 @@ extension ListVariableQueryWhere
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterWhereClause> idBetween(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -210,9 +209,9 @@ extension ListVariableQueryWhere
   }
 }
 
-extension ListVariableQueryFilter
-    on QueryBuilder<ListVariable, ListVariable, QFilterCondition> {
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+extension ListVariableDAOQueryFilter
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QFilterCondition> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -226,7 +225,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementGreaterThan(
     String value, {
     bool include = false,
@@ -242,7 +241,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementLessThan(
     String value, {
     bool include = false,
@@ -258,7 +257,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementBetween(
     String lower,
     String upper, {
@@ -278,7 +277,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -292,7 +291,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -306,7 +305,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -317,7 +316,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -328,7 +327,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -338,7 +337,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -348,7 +347,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -361,7 +360,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -374,7 +373,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -387,7 +386,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentLengthLessThan(
     int length, {
     bool include = false,
@@ -403,7 +402,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentLengthGreaterThan(
     int length, {
     bool include = false,
@@ -419,7 +418,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       contentLengthBetween(
     int lower,
     int upper, {
@@ -437,8 +436,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> idEqualTo(
-      Id value) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -447,7 +446,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -460,7 +460,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> idLessThan(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -473,7 +474,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> idBetween(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -490,7 +492,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -504,7 +506,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierGreaterThan(
     String value, {
     bool include = false,
@@ -520,7 +522,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierLessThan(
     String value, {
     bool include = false,
@@ -536,7 +538,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierBetween(
     String lower,
     String upper, {
@@ -556,7 +558,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -570,7 +572,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -584,7 +586,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -595,7 +597,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -606,7 +608,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -616,7 +618,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       identifierIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -626,8 +628,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> loopEqualTo(
-      bool value) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      loopEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'loop',
@@ -636,7 +638,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameEqualTo(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -649,7 +652,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       nameGreaterThan(
     String value, {
     bool include = false,
@@ -665,7 +668,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameLessThan(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -680,7 +684,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameBetween(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -699,7 +704,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       nameStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -713,7 +718,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameEndsWith(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -726,9 +732,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'name',
@@ -738,9 +743,8 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition> nameMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
+      nameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'name',
@@ -750,7 +754,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -760,7 +764,7 @@ extension ListVariableQueryFilter
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterFilterCondition>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterFilterCondition>
       nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -771,126 +775,133 @@ extension ListVariableQueryFilter
   }
 }
 
-extension ListVariableQueryObject
-    on QueryBuilder<ListVariable, ListVariable, QFilterCondition> {}
+extension ListVariableDAOQueryObject
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QFilterCondition> {}
 
-extension ListVariableQueryLinks
-    on QueryBuilder<ListVariable, ListVariable, QFilterCondition> {}
+extension ListVariableDAOQueryLinks
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QFilterCondition> {}
 
-extension ListVariableQuerySortBy
-    on QueryBuilder<ListVariable, ListVariable, QSortBy> {
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> sortByIdentifier() {
+extension ListVariableDAOQuerySortBy
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QSortBy> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      sortByIdentifier() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'identifier', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
       sortByIdentifierDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'identifier', Sort.desc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> sortByLoop() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> sortByLoop() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'loop', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> sortByLoopDesc() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      sortByLoopDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'loop', Sort.desc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> sortByName() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> sortByNameDesc() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      sortByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 }
 
-extension ListVariableQuerySortThenBy
-    on QueryBuilder<ListVariable, ListVariable, QSortThenBy> {
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenById() {
+extension ListVariableDAOQuerySortThenBy
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QSortThenBy> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByIdentifier() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      thenByIdentifier() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'identifier', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy>
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
       thenByIdentifierDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'identifier', Sort.desc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByLoop() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> thenByLoop() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'loop', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByLoopDesc() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      thenByLoopDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'loop', Sort.desc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByName() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QAfterSortBy> thenByNameDesc() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QAfterSortBy>
+      thenByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 }
 
-extension ListVariableQueryWhereDistinct
-    on QueryBuilder<ListVariable, ListVariable, QDistinct> {
-  QueryBuilder<ListVariable, ListVariable, QDistinct> distinctByContent() {
+extension ListVariableDAOQueryWhereDistinct
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QDistinct> {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QDistinct>
+      distinctByContent() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'content');
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QDistinct> distinctByIdentifier(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QDistinct>
+      distinctByIdentifier({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'identifier', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QDistinct> distinctByLoop() {
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QDistinct> distinctByLoop() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'loop');
     });
   }
 
-  QueryBuilder<ListVariable, ListVariable, QDistinct> distinctByName(
+  QueryBuilder<ListVariableDAO, ListVariableDAO, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
@@ -898,33 +909,34 @@ extension ListVariableQueryWhereDistinct
   }
 }
 
-extension ListVariableQueryProperty
-    on QueryBuilder<ListVariable, ListVariable, QQueryProperty> {
-  QueryBuilder<ListVariable, int, QQueryOperations> idProperty() {
+extension ListVariableDAOQueryProperty
+    on QueryBuilder<ListVariableDAO, ListVariableDAO, QQueryProperty> {
+  QueryBuilder<ListVariableDAO, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<ListVariable, List<String>, QQueryOperations> contentProperty() {
+  QueryBuilder<ListVariableDAO, List<String>, QQueryOperations>
+      contentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'content');
     });
   }
 
-  QueryBuilder<ListVariable, String, QQueryOperations> identifierProperty() {
+  QueryBuilder<ListVariableDAO, String, QQueryOperations> identifierProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'identifier');
     });
   }
 
-  QueryBuilder<ListVariable, bool, QQueryOperations> loopProperty() {
+  QueryBuilder<ListVariableDAO, bool, QQueryOperations> loopProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'loop');
     });
   }
 
-  QueryBuilder<ListVariable, String, QQueryOperations> nameProperty() {
+  QueryBuilder<ListVariableDAO, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
     });
