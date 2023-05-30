@@ -19,9 +19,7 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
 
   void init() async {
     _refresh();
-    ref.read(database).onListVariableChange().listen((event) {
-      _refresh();
-    });
+    ref.read(database).onListVariableChange().listen((event) => _refresh());
   }
 
   void addVariable(ListVariableData variable) async {
