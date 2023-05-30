@@ -17,7 +17,6 @@ abstract class Database{
   Future<ListVariable> modifyListVariable(ListVariable oldVariable, ListVariableData newVariable);
   Future<void> deleteListVariable(ListVariable variable);
   Stream<void> onListVariableChange();
-  Future<bool> identifierExists(String identifier);
 }
 
 class IsarDatabase implements Database {
@@ -66,14 +65,5 @@ class IsarDatabase implements Database {
     );
     isar.writeTxn(() => isar.listVariableDAOs.put(newVariable));
     return newVariable;
-  }
-
-  @override
-  Future<bool> identifierExists(String identifier) async {
-    return await isar
-    .listVariableDAOs
-    .filter()
-    .identifierEqualTo(identifier)
-    .count() > 0;
   }
 }
