@@ -13,6 +13,9 @@ class ListVariableDAO extends ListVariable{
     super.id = Isar.autoIncrement
   });
 
+  @override
+  Id get id => Isar.autoIncrement;
+
   static ListVariableDAO fromData(ListVariableData data) {
     return ListVariableDAO(
       name: data.name,
