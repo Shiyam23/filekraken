@@ -470,6 +470,7 @@ class FilterNone extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     } 
     else if (state is FileEntityLoadedState) {
+      onEntitySelect(state.fileEntities);
       return ListView(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),

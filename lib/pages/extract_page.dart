@@ -100,21 +100,16 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   void moveFiles() async {
     String rootPath = ref.read(rootDirectoryProvider);
-    final state = ref.read(fileListStateProvider);
-    if (state is! FileEntityLoadedState) {
+    if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
-    var selectedFiles = state.fileEntities;
-    if (selectedFiles.isEmpty) {
-      return;
-    }
-    for (String filePath in selectedFiles) {
+    for (String filePath in _selectedFiles!) {
       File selectedFile = File(filePath);
       if (rootPath != "" && await selectedFile.exists()) {
         await selectedFile.rename(path.join(rootPath, path.basename(filePath)));
       }
     }
-    selectedFiles.clear();
+    _selectedFiles?.clear();
     refreshDirectories();
   }
 }
