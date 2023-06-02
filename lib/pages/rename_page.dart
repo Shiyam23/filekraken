@@ -1,9 +1,9 @@
 import 'dart:io';
+import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 import '../service/modifer_parser.dart';
@@ -51,9 +51,18 @@ class _RenamePageState extends ConsumerState<RenamePage> {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: renameFiles, 
-            child: const Text("Rename!")
+          child: ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => rename(dryRun: false), 
+                child: const Text("Rename!")
+              ),
+              ElevatedButton(
+                onPressed: () => rename(dryRun: true), 
+                child: const Text("DryRun!")
+              ),
+            ],
           ),
         )
       ],
@@ -76,20 +85,25 @@ class _RenamePageState extends ConsumerState<RenamePage> {
     _selectedFiles = selectedFiles;
   }
 
-  void renameFiles() async {
+  void rename({required bool dryRun}) async {
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
+    String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
-    for (int i = 0; i < _selectedFiles!.length; i++) {
-      String selectedFilePath = _selectedFiles![i];
-      String fileBasename = basenameWithoutExtension(selectedFilePath);
-      String fileExtension = extension(selectedFilePath);
-      String newFileName = modifyName(fileBasename, i, config, variables);
-      String newFilePath = join(dirname(selectedFilePath), newFileName+fileExtension);
-      File oldFile = File(selectedFilePath);
-      await oldFile.rename(newFilePath);
-    }
-    refreshFiles();
+    Stream<FileOperationResult> results = renameFiles(
+      selectedFiles: _selectedFiles!,
+      variables: variables,
+      config: config,
+      rootPath: rootPath,
+      dryRun: dryRun
+    );
+    showDialog(
+      context: context, 
+      builder: (context) => ResultDialog(
+        resultStream: results,
+        onResultLoaded: dryRun ? null : refreshFiles,
+      )
+    );
   }
 }

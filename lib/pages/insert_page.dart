@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 import '../service/group_config.dart';
@@ -58,9 +57,18 @@ class _InsertPageState extends ConsumerState<InsertPage> {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: insertFiles, 
-            child: const Text("Insert!")
+          child: ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => insert(dryRun: false), 
+                child: const Text("Insert!")
+              ),
+              ElevatedButton(
+                onPressed: () => insert(dryRun: true), 
+                child: const Text("Dryrun!")
+              ),
+            ],
           ),
         )
       ],
@@ -86,63 +94,30 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     _selectedFiles = selectedFiles;
   }
 
-  void insertFiles() async {
+  void insert({required bool dryRun}) async {
     String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
-
-    List<GroupOption> nonEmptyGroups = groupConfig.groups
-    .where((group) => group.match != null && group.match != "")
-    .where((group) => group.groupName != null && group.groupName != "")
-    .toList();
-
-    if (nonEmptyGroups.isNotEmpty) {
-      Map<String, List<String>> fileGroups = {
-      for (GroupOption group in nonEmptyGroups) group.groupName!:[] 
-      };
-      for (int i = 0; i < _selectedFiles!.length; i++) {
-        String selectedFilePath = _selectedFiles![i];
-        String fileBasename = basename(selectedFilePath);
-        if (nonEmptyGroups.isNotEmpty) {
-          for (GroupOption group in nonEmptyGroups) {
-            String groupMatch = group.match!;
-            String groupName = group.groupName!;
-            List<String> matches = parseGroupMatch(groupMatch);
-            for (String match in matches) {
-              if (fileBasename.contains(match)) {
-              fileGroups[groupName]!.add(selectedFilePath);
-              break;
-              }
-            }
-          }
-        } 
-      }
-      for (String groupName in fileGroups.keys) {
-        if (fileGroups[groupName]!.isEmpty) continue;
-        Directory groupDirectory = Directory(join(rootPath, groupName));
-        if (!await groupDirectory.exists()) groupDirectory.create();
-        for (String filePath in fileGroups[groupName]!) {
-          File file = File(filePath);
-          file.rename(join(groupDirectory.path, basename(filePath)));
-        }
-      }
-    }
-    else {
-      for (int i = 0; i < _selectedFiles!.length; i++) {
-        String selectedFilePath = _selectedFiles![i];
-        String fileBasename = basenameWithoutExtension(selectedFilePath);
-        String directoryName = modifyName(fileBasename, i, pathModifierConfig, variables);
-        String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
-        Directory newDirectory = Directory(newDirectoryPath);
-        if (!await newDirectory.exists()) {
-          newDirectory.create();
-          File selectedFile = File(selectedFilePath);
-          selectedFile.rename(join(newDirectoryPath, basename(selectedFilePath)));
-        }
-      }
-    }
-    refreshFiles();
+    Stream<FileOperationResult> results = insertFiles(
+      selectedFiles: _selectedFiles!, 
+      rootPath: rootPath, 
+      dryRun: dryRun, 
+      pathModifierConfig: pathModifierConfig, 
+      groupConfig: groupConfig, 
+      variables: variables
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context, 
+      useRootNavigator: false,
+      builder: (context) => ResultDialog(
+        resultStream: results,
+        onResultLoaded: dryRun ? null : () {
+          refreshFiles();
+        },
+      ),
+    );
   }
 }

@@ -1,7 +1,7 @@
-import 'dart:io';
+import 'dart:async';
+import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as path;
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +15,7 @@ class ExtractPage extends ConsumerStatefulWidget {
 class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   final ValueNotifier<int> _depth = ValueNotifier(0);
-  List<String>? _selectedFiles;
+  List<String> _selectedFiles = [];
   FilterMode directoryFilterMode = FilterMode.none;
 
   @override
@@ -49,9 +49,20 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
           onFileSelect: onFileSelect,
           initialFilterMode: FilterMode.none,
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(onPressed: moveFiles, child: const Text("Move!")),
+        Center(
+          child: ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => moveFiles(dryRun: false), 
+                child: const Text("Move!")
+              ),
+              ElevatedButton(
+                onPressed: () => moveFiles(dryRun: true), 
+                child: const Text("DryRun!")
+              ),
+            ],
+          ),
         )
       ],
     );
@@ -98,18 +109,24 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
     _selectedFiles = selectedFiles;
   }
 
-  void moveFiles() async {
+  void moveFiles({required bool dryRun}) async {
     String rootPath = ref.read(rootDirectoryProvider);
-    if (_selectedFiles == null || _selectedFiles!.isEmpty) {
-      return;
-    }
-    for (String filePath in _selectedFiles!) {
-      File selectedFile = File(filePath);
-      if (rootPath != "" && await selectedFile.exists()) {
-        await selectedFile.rename(path.join(rootPath, path.basename(filePath)));
-      }
-    }
-    _selectedFiles?.clear();
-    refreshDirectories();
+    Stream<FileOperationResult> results = extractFiles(
+      selectedFiles: _selectedFiles, 
+      rootPath: rootPath,
+      dryRun: dryRun
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context, 
+      useRootNavigator: false,
+      builder: (context) => ResultDialog(
+        resultStream: results,
+        onResultLoaded: dryRun ? null : () {
+          _selectedFiles.clear();
+          refreshDirectories();
+        },
+      ),    
+    );
   }
 }

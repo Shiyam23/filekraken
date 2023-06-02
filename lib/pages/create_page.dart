@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:filekraken/components/dialogs/error_dialogs.dart';
+import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
 import '../components/titlebar/variable_widget.dart';
@@ -40,9 +40,18 @@ class _CreatePageState extends ConsumerState<CreatePage> {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: () => createFiles(context), 
-            child: const Text("Create!")
+          child: ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => create(dryRun: false), 
+                child: const Text("Create!")
+              ),
+              ElevatedButton(
+                onPressed: () => create(dryRun: true), 
+                child: const Text("DryRun!")
+              ),
+            ],
           ),
         )
       ],
@@ -53,74 +62,34 @@ class _CreatePageState extends ConsumerState<CreatePage> {
     ref.read(rootDirectoryProvider.notifier).state = rootPath;
   }
 
-  void createFiles(BuildContext context) async {
+  void create({required bool dryRun}) async {
     String rootPath = ref.read(rootDirectoryProvider);
     if (rootPath == "") {
       // TODO: Show error dialog
       return;
     }
     Map<String, Variable> variables = ref.read(variableListProvider);
-    ContentMode mode = fileContent.mode;
-    for (int i = 0; i < config.numberFiles; i++) {
-      String generatedName;
-      try {
-        generatedName = applyVariables(
-        content: config.nameGenerator, 
-        index: i, 
+    try {
+      Stream<FileOperationResult> results = createFiles(
+        fileContent: fileContent,
+        config: config,
+        rootPath: rootPath,
+        dryRun: dryRun,
         variables: variables
-        );
-      } on MissingVariableException catch (e) {
-        showDialog(
+      );
+      showDialog(
+      barrierDismissible: false,
+      context: context, 
+      useRootNavigator: false,
+      builder: (context) => ResultDialog(resultStream: results),    
+    );
+    } on MissingVariableException catch (e) {
+      showDialog(
           context: context, 
           builder: (context) => MissingVariableErrorDialog(
             exception: e
           )
         );
-        return;
-      }
-      switch (mode) {
-        case ContentMode.text: {
-          if (fileContent.textContent == null) {
-            // TODO: Show error dialog
-            return;
-          }
-          String textContent = fileContent.textContent!;
-          String modifiedContent;
-          try {
-            modifiedContent = applyVariables(
-              content: textContent, 
-              index: i, 
-              variables: variables
-            );
-          } on MissingVariableException catch (e) {
-            showDialog(
-              context: context, 
-              builder: (context) => MissingVariableErrorDialog(exception: e)
-            );
-            return;
-          }
-          File newFile = File(join(rootPath, "$generatedName.txt"));
-          if (!await newFile.exists()) {
-            await newFile.create();
-            await newFile.writeAsString(modifiedContent);
-          }
-          break;
-        }
-        case ContentMode.binary: {
-          if (fileContent.binaryFilePath == null) {
-            // TODO: Show error dialog
-            return;
-          }
-          List<int> fileData = await File(fileContent.binaryFilePath!).readAsBytes();
-          String fileExtension = extension(fileContent.binaryFilePath!);
-          File newFile = File(join(rootPath, generatedName + fileExtension));
-          if (!await newFile.exists()) {
-            await newFile.create();
-            await newFile.writeAsBytes(fileData);
-          }
-          break;
-        }
-      }
     }
   }
 }
