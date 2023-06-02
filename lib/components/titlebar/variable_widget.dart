@@ -155,7 +155,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   void modifyVariable(BuildContext context, Variable e) async {
     if (e is! ListVariable) {
       throw ArgumentError.value(e, "e", "e is not a ListVariable");
-    };
+    }
     ListVariableData? result = await showDialog<ListVariableData>(
       context: context, 
       builder: (context) => ListVariableEdit(

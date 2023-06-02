@@ -1,5 +1,4 @@
 import 'package:filekraken/service/file_op.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ResultDialog extends StatefulWidget {

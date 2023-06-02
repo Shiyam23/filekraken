@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/model/file_content.dart';
