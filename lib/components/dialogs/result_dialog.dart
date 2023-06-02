@@ -23,10 +23,12 @@ class _ResultDialogState extends State<ResultDialog> {
 
   @override
   void initState() {
-    var sub = widget.resultStream.listen((event) {
-      results.add(event);
-      _listKey.currentState?.insertItem(results.length - 1);
-    });
+    var sub = widget.resultStream.listen(
+      (event) {
+        results.add(event);
+        _listKey.currentState?.insertItem(results.length - 1);
+      },
+    );
     sub.onDone(() {
       widget.onResultLoaded?.call();
       dismissible.value = true;
@@ -87,7 +89,6 @@ class _ResultDialogState extends State<ResultDialog> {
   }
 
   Text getTextByResultType(ResultType resultType) {
-    
     switch (resultType) {
       case ResultType.success:
         return const Text(

@@ -18,6 +18,7 @@ class CreatePage extends ConsumerStatefulWidget {
 
 class _CreatePageState extends ConsumerState<CreatePage> {
 
+  final GlobalKey<FormState> _formKey = GlobalKey();
   NameGeneratorConfig config = NameGeneratorConfig(
     nameGenerator: "",
     numberFiles: 1
@@ -26,34 +27,37 @@ class _CreatePageState extends ConsumerState<CreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FolderSelectionUnit(
-          onDirectorySelect: onRootDirectorySelected
-        ),
-        NameGeneratorUnit(
-          config: config,
-        ),
-        FileContentUnit(
-          content: fileContent,
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => create(dryRun: false), 
-                child: const Text("Create!")
-              ),
-              ElevatedButton(
-                onPressed: () => create(dryRun: true), 
-                child: const Text("DryRun!")
-              ),
-            ],
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          FolderSelectionUnit(
+            onDirectorySelect: onRootDirectorySelected
           ),
-        )
-      ],
+          NameGeneratorUnit(
+            config: config,
+          ),
+          FileContentUnit(
+            content: fileContent,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => create(dryRun: false), 
+                  child: const Text("Create!")
+                ),
+                ElevatedButton(
+                  onPressed: () => create(dryRun: true), 
+                  child: const Text("DryRun!")
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -62,33 +66,31 @@ class _CreatePageState extends ConsumerState<CreatePage> {
   }
 
   void create({required bool dryRun}) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     String rootPath = ref.read(rootDirectoryProvider);
     if (rootPath == "") {
       // TODO: Show error dialog
       return;
     }
     Map<String, Variable> variables = ref.read(variableListProvider);
-    try {
-      Stream<FileOperationResult> results = createFiles(
-        fileContent: fileContent,
-        config: config,
-        rootPath: rootPath,
-        dryRun: dryRun,
-        variables: variables
-      );
-      showDialog(
+    Stream<FileOperationResult> results = createFiles(
+      fileContent: fileContent,
+      config: config,
+      rootPath: rootPath,
+      dryRun: dryRun,
+      variables: variables
+    ).asBroadcastStream();
+    results.listen(
+      null,
+      onError: (e) => showErrorDialog(e, context)
+    );
+    showDialog(
       barrierDismissible: false,
       context: context, 
       useRootNavigator: false,
-      builder: (context) => ResultDialog(resultStream: results),    
+      builder: (context) => ResultDialog(resultStream: results),
     );
-    } on MissingVariableException catch (e) {
-      showDialog(
-          context: context, 
-          builder: (context) => MissingVariableErrorDialog(
-            exception: e
-          )
-        );
-    }
   }
 }

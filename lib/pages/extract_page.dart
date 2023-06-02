@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ class ExtractPage extends ConsumerStatefulWidget {
 
 class _ExtractPageState extends ConsumerState<ExtractPage> {
 
+  final GlobalKey<FormState> _formKey = GlobalKey();
   final ValueNotifier<int> _depth = ValueNotifier(0);
   List<String> _selectedFiles = [];
   FilterMode directoryFilterMode = FilterMode.none;
@@ -34,37 +36,40 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FolderSelectionUnit(
-          onDirectorySelect: onRootDirectorySelected,
-          depth: _depth,
-        ),
-        FilterDirectoryUnit(
-          initialFilterMode: directoryFilterMode,
-          onDirectorySelect: onDirectorySelect,
-          onFilterModeChange: _onDirFilterModeChange,
-        ),
-        FilterFileUnit(
-          onFileSelect: onFileSelect,
-          initialFilterMode: FilterMode.none,
-        ),
-        Center(
-          child: ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => moveFiles(dryRun: false), 
-                child: const Text("Move!")
-              ),
-              ElevatedButton(
-                onPressed: () => moveFiles(dryRun: true), 
-                child: const Text("DryRun!")
-              ),
-            ],
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          FolderSelectionUnit(
+            onDirectorySelect: onRootDirectorySelected,
+            depth: _depth,
           ),
-        )
-      ],
+          FilterDirectoryUnit(
+            initialFilterMode: directoryFilterMode,
+            onDirectorySelect: onDirectorySelect,
+            onFilterModeChange: _onDirFilterModeChange,
+          ),
+          FilterFileUnit(
+            onFileSelect: onFileSelect,
+            initialFilterMode: FilterMode.none,
+          ),
+          Center(
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => moveFiles(dryRun: false), 
+                  child: const Text("Move!")
+                ),
+                ElevatedButton(
+                  onPressed: () => moveFiles(dryRun: true), 
+                  child: const Text("DryRun!")
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -110,11 +115,18 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void moveFiles({required bool dryRun}) async {
+    if (_formKey.currentState!.validate()) {
+      return;
+    }
     String rootPath = ref.read(rootDirectoryProvider);
     Stream<FileOperationResult> results = extractFiles(
       selectedFiles: _selectedFiles, 
       rootPath: rootPath,
       dryRun: dryRun
+    ).asBroadcastStream();
+    results.listen(
+      null,
+      onError: (e) => showErrorDialog(e, context)
     );
     showDialog(
       barrierDismissible: false,

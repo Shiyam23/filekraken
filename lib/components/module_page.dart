@@ -4,6 +4,7 @@ import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/pages/extract_page.dart';
 import 'package:filekraken/pages/insert_page.dart';
 import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/textfield_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,7 +99,8 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
               const Text("Folder path"),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                child: TextField(
+                child: TextFormField(
+                  validator: checkEmptiness,
                   controller: _controller,
                   readOnly: true,
                   decoration: InputDecoration(
@@ -504,7 +506,6 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
-  String? _errorText;
   late int count = widget.config.options.length;
 
   @override
@@ -586,10 +587,7 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
         flex: 1,
         child: TextFormField(
           initialValue: remove ? null : widget.config.options[index].order?.toString(),
-          validator: remove ? null: (value) {
-            if (value == null) return null;
-            return int.tryParse(value) == null ? "Zahl!" : null;
-          },
+          validator: remove ? null: validateOrder,
           onChanged: remove ? null: (value) {
             widget.config.options[index].order = int.tryParse(value);
           },
@@ -612,8 +610,14 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
     ],
   );
 
-  String? validatePathModifier(String? pathModifier) {
-    return _errorText;
+  String? validateOrder(String? orderValue) {
+    if (orderValue == null || orderValue == "") {
+      return "Order can not be empty";
+    }
+    int? order = int.tryParse(orderValue);
+    if (order == null) return "Input needs to be a number";
+    if (order < 1) return "Input needs to be 1 or greater";
+    return null;
   }
 
   void addRow() {
@@ -787,6 +791,7 @@ class NameGeneratorUnit extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
                     child: TextFormField(
+                      validator: checkEmptiness,
                       initialValue: config.nameGenerator,
                       onChanged: (value) => config.nameGenerator = value,
                       decoration: const InputDecoration(
@@ -816,6 +821,7 @@ class NameGeneratorUnit extends StatelessWidget {
                             onChanged: (value) {
                               config.numberFiles = int.parse(value);
                             },
+                            validator: checkEmptiness,
                             decoration: const InputDecoration(
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -834,6 +840,7 @@ class NameGeneratorUnit extends StatelessWidget {
       )
     );
   }
+
 }
 
 class FileContentUnit extends StatelessWidget {
@@ -869,8 +876,9 @@ class TextFileContentUnit extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       minLines: 5,
+      validator: checkEmptiness,
       maxLines: 10,
       decoration: const InputDecoration(
         border: OutlineInputBorder(
@@ -905,7 +913,8 @@ class _BinaryFileContentUnitState extends State<BinaryFileContentUnit> {
         const Text("File path"),
           Expanded(child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-            child: TextField(
+            child: TextFormField(
+              validator: checkEmptiness,
               controller: _controller,
               readOnly: true,
               decoration: InputDecoration(

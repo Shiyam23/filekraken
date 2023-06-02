@@ -1,6 +1,20 @@
 import 'package:filekraken/model/list_variable.dart';
 import 'package:flutter/material.dart';
 
+void showErrorDialog(Exception e, BuildContext context) {
+  Navigator.pop(context);
+  Widget dialog;
+  switch (e.runtimeType) {
+    case MissingVariableException:
+      dialog = MissingVariableErrorDialog(exception: e as MissingVariableException);
+    default: throw UnimplementedError();
+  }
+  showDialog(
+    context: context, 
+    builder: (context) => dialog
+  );
+}
+
 class ErrorDialog extends StatelessWidget {
   const ErrorDialog({
     super.key, 

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/list_variable.dart';
@@ -17,8 +17,8 @@ class RenamePage extends ConsumerStatefulWidget {
 
 class _RenamePageState extends ConsumerState<RenamePage> {
 
+  final GlobalKey<FormState> _formKey = GlobalKey();
   List<String>? _selectedFiles;
-
   PathModifierConfig config = PathModifierConfig(
     options: [PathModifierOptions(order: 1)]
   );
@@ -36,36 +36,39 @@ class _RenamePageState extends ConsumerState<RenamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FolderSelectionUnit(
-          onDirectorySelect: onRootDirectorySelected
-        ),
-        FilterFileUnit(
-          initialFilterMode: FilterMode.none,
-          onFileSelect: onFileSelect,
-        ),
-        NameModifierUnit(
-          title: "Assign file name",
-          config: config,
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => rename(dryRun: false), 
-                child: const Text("Rename!")
-              ),
-              ElevatedButton(
-                onPressed: () => rename(dryRun: true), 
-                child: const Text("DryRun!")
-              ),
-            ],
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          FolderSelectionUnit(
+            onDirectorySelect: onRootDirectorySelected
           ),
-        )
-      ],
+          FilterFileUnit(
+            initialFilterMode: FilterMode.none,
+            onFileSelect: onFileSelect,
+          ),
+          NameModifierUnit(
+            title: "Assign file name",
+            config: config,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => rename(dryRun: false), 
+                  child: const Text("Rename!")
+                ),
+                ElevatedButton(
+                  onPressed: () => rename(dryRun: true), 
+                  child: const Text("DryRun!")
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -87,6 +90,10 @@ class _RenamePageState extends ConsumerState<RenamePage> {
 
   void rename({required bool dryRun}) async {
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
+      // TODO: Show error message
+      return;
+    }
+    if (!_formKey.currentState!.validate()) {
       return;
     }
     String rootPath = ref.read(rootDirectoryProvider);
@@ -97,6 +104,10 @@ class _RenamePageState extends ConsumerState<RenamePage> {
       config: config,
       rootPath: rootPath,
       dryRun: dryRun
+    ).asBroadcastStream();
+    results.listen(
+      null,
+      onError: (e) => showErrorDialog(e, context)
     );
     showDialog(
       context: context, 

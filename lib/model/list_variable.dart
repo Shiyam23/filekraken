@@ -73,7 +73,7 @@ class DeleteVariable extends Variable{
   String getValue(int index) => "";
 }
 
-class MissingVariableException{
+class MissingVariableException implements Exception{
 
   MissingVariableException({
     required this.content,

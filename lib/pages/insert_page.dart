@@ -1,3 +1,4 @@
+import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/list_variable.dart';
@@ -107,6 +108,10 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       pathModifierConfig: pathModifierConfig, 
       groupConfig: groupConfig, 
       variables: variables
+    ).asBroadcastStream();
+    results.listen(
+      null,
+      onError: (e) => showErrorDialog(e, context)
     );
     showDialog(
       barrierDismissible: false,
