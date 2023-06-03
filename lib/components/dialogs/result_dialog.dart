@@ -1,13 +1,21 @@
-import 'package:filekraken/service/file_op.dart';
+import 'dart:async';
+import 'package:filekraken/components/dialogs/error_dialogs.dart';
+import 'package:filekraken/model/file_result.dart';
+import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 class ResultDialog extends StatefulWidget {
-  const ResultDialog({
-    super.key,
-    required this.resultStream,
-    this.onResultLoaded
-  });
+  const ResultDialog(
+      {super.key,
+      required this.resultStream,
+      required this.operationType,
+      required this.rootPath,
+      required this.maxNumber,
+      this.onResultLoaded});
 
+  final OperationType operationType;
+  final String rootPath;
+  final int maxNumber;
   final Stream<FileOperationResult> resultStream;
   final void Function()? onResultLoaded;
 
@@ -16,54 +24,100 @@ class ResultDialog extends StatefulWidget {
 }
 
 class _ResultDialogState extends State<ResultDialog> {
-
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
   final List<FileOperationResult> results = [];
   final ValueNotifier<bool> dismissible = ValueNotifier(false);
+  final ValueNotifier<int> progress = ValueNotifier(0);
+  late final StreamSubscription<FileOperationResult> sub;
 
   @override
   void initState() {
-    var sub = widget.resultStream.listen(
+    sub = widget.resultStream.listen(
       (event) {
         results.add(event);
+        if (event.resultType != ResultType.fail) {
+          progress.value++;
+        }
         _listKey.currentState?.insertItem(results.length - 1);
       },
+      onDone: () {
+        widget.onResultLoaded?.call();
+        dismissible.value = true;
+      },
+      onError: (e) => showErrorDialog(e, context),
     );
-    sub.onDone(() {
-      widget.onResultLoaded?.call();
-      dismissible.value = true;
-    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: const EdgeInsets.all(40),
-
-      child: SizedBox.expand(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(40),
         child: Column(
-          children: [
-            AnimatedList(
-              shrinkWrap: true,
+          mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: MoveWindow(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                height: 50,
+                color: Colors.red[700],
+                alignment: Alignment.center,
+                child: Row(
+                  children: [
+                    Text(
+                      widget.operationType.toString(),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(width: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: ValueListenableBuilder(
+                        valueListenable: progress,
+                        builder: (_, progress, __) =>
+                          Text("Success: $progress/${widget.maxNumber}")
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 15,
+            child: AnimatedList(
               key: _listKey,
               initialItemCount: results.length,
               itemBuilder: (context, index, animation) {
                 String rootPath = results[index].rootPath;
-                String source = results[index].fileSource.replaceFirst(rootPath, "");
-                String target = results[index].fileTarget.replaceFirst(rootPath, "");
+                String source =
+                    results[index].fileSource.replaceFirst(rootPath, "");
+                String target =
+                    results[index].fileTarget.replaceFirst(rootPath, "→ .");
                 ErrorType? error = results[index].error;
                 return ExpansionTile(
                   expandedAlignment: Alignment.topLeft,
                   title: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(".$source"),
-                      const Spacer(),
+                      Expanded(
+                        child: Text(
+                          ".$source",
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      ),
+                      const SizedBox(width: 20),
                       getTextByResultType(results[index].resultType),
                     ],
                   ),
-                  subtitle: Text("→ .$target"),
+                  subtitle: Text(target),
                   expandedCrossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Root Path: $rootPath"),
@@ -73,47 +127,44 @@ class _ResultDialogState extends State<ResultDialog> {
                 );
               },
             ),
-            const Spacer(),
-            ValueListenableBuilder(
-              valueListenable: dismissible,
-              child: const Text("OK"),
-              builder: (context, dismissible, child) => TextButton(
-                onPressed: dismissible ? () => Navigator.pop(context) : null, 
-                child: child!
-              )
+          ),
+          ValueListenableBuilder(
+            valueListenable: dismissible,
+            child: const Text("OK"),
+            builder: (context, dismissible, child) => TextButton(
+              onPressed: dismissible ? () { 
+                sub.cancel();
+                Navigator.pop(context);
+              } : null,
+              child: child!
             )
-          ],
-        ),
-      )
+          ),
+        ],
+    ),
+      ),
     );
   }
 
   Text getTextByResultType(ResultType resultType) {
     switch (resultType) {
       case ResultType.success:
-        return const Text(
-          "Success",
-          style: TextStyle(
-            color: Colors.white,
-            backgroundColor: Colors.green,
-          )
-        );
+        return const Text("Success",
+            style: TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.green,
+            ));
       case ResultType.fail:
-        return const Text(
-          "Fail", 
-          style: TextStyle(
-            color: Colors.white,
-            backgroundColor: Colors.red,
-          )
-        );
+        return Text("Fail",
+            style: TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.red[800],
+            ));
       case ResultType.dryRun:
-        return const Text(
-          "Dry Run", 
-          style: TextStyle(
-            color: Colors.white,
-            backgroundColor: Colors.yellow,
-          )
-        );
+        return Text("Dry Run",
+            style: TextStyle(
+              color: Colors.white,
+              backgroundColor: Colors.green[800],
+            ));
     }
   }
 

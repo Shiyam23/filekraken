@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
+import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
@@ -115,7 +115,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
   }
 
   void moveFiles({required bool dryRun}) async {
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
     String rootPath = ref.read(rootDirectoryProvider);
@@ -123,17 +123,17 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
       selectedFiles: _selectedFiles, 
       rootPath: rootPath,
       dryRun: dryRun
-    ).asBroadcastStream();
-    results.listen(
-      null,
-      onError: (e) => showErrorDialog(e, context)
     );
-    showDialog(
+    
+    await showDialog(
       barrierDismissible: false,
       context: context, 
-      useRootNavigator: false,
+      //useRootNavigator: false,
       builder: (context) => ResultDialog(
+        operationType: OperationType.extract,
+        rootPath: rootPath,
         resultStream: results,
+        maxNumber: _selectedFiles.length,
         onResultLoaded: dryRun ? null : () {
           _selectedFiles.clear();
           refreshDirectories();

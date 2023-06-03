@@ -1,7 +1,10 @@
 import 'package:filekraken/model/list_variable.dart';
 import 'package:flutter/material.dart';
 
-void showErrorDialog(Exception e, BuildContext context) {
+void showErrorDialog(Object e, BuildContext context) {
+  if (e is! Error && e is! Exception) {
+    throw ArgumentError.value(e, "e", "Must be either of type Error or Exception");
+  }
   Navigator.pop(context);
   Widget dialog;
   switch (e.runtimeType) {

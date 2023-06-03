@@ -1,6 +1,6 @@
-import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/model/file_content.dart';
+import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,16 +81,17 @@ class _CreatePageState extends ConsumerState<CreatePage> {
       rootPath: rootPath,
       dryRun: dryRun,
       variables: variables
-    ).asBroadcastStream();
-    results.listen(
-      null,
-      onError: (e) => showErrorDialog(e, context)
     );
-    showDialog(
+    await showDialog(
       barrierDismissible: false,
       context: context, 
       useRootNavigator: false,
-      builder: (context) => ResultDialog(resultStream: results),
+      builder: (context) => ResultDialog(
+        resultStream: results,
+        maxNumber: config.numberFiles,
+        operationType: OperationType.create,
+        rootPath: rootPath,
+      ),
     );
   }
 }

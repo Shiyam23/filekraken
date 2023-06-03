@@ -1,6 +1,6 @@
-import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
+import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +18,7 @@ class InsertPage extends ConsumerStatefulWidget {
 
 class _InsertPageState extends ConsumerState<InsertPage> {
 
+  final GlobalKey<FormState> _formKey = GlobalKey();
   List<String>? _selectedFiles;
   PathModifierConfig pathModifierConfig = PathModifierConfig(
     options: [PathModifierOptions(order: 1)]
@@ -39,40 +40,43 @@ class _InsertPageState extends ConsumerState<InsertPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FolderSelectionUnit(
-          onDirectorySelect: onRootDirectorySelected
-        ),
-        FilterFileUnit(
-          initialFilterMode: FilterMode.none,
-          onFileSelect: onFileSelect,
-        ),
-        GroupUnit(
-          title: "Group by", 
-          config: groupConfig
-        ),
-        NameModifierUnit(
-          title: "Assign directory name",
-          config: pathModifierConfig,
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => insert(dryRun: false), 
-                child: const Text("Insert!")
-              ),
-              ElevatedButton(
-                onPressed: () => insert(dryRun: true), 
-                child: const Text("Dryrun!")
-              ),
-            ],
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          FolderSelectionUnit(
+            onDirectorySelect: onRootDirectorySelected
           ),
-        )
-      ],
+          FilterFileUnit(
+            initialFilterMode: FilterMode.none,
+            onFileSelect: onFileSelect,
+          ),
+          GroupUnit(
+            title: "Group by", 
+            config: groupConfig
+          ),
+          NameModifierUnit(
+            title: "Assign directory name",
+            config: pathModifierConfig,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => insert(dryRun: false), 
+                  child: const Text("Insert!")
+                ),
+                ElevatedButton(
+                  onPressed: () => insert(dryRun: true), 
+                  child: const Text("Dryrun!")
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -98,6 +102,9 @@ class _InsertPageState extends ConsumerState<InsertPage> {
   void insert({required bool dryRun}) async {
     String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
@@ -108,17 +115,16 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       pathModifierConfig: pathModifierConfig, 
       groupConfig: groupConfig, 
       variables: variables
-    ).asBroadcastStream();
-    results.listen(
-      null,
-      onError: (e) => showErrorDialog(e, context)
     );
     showDialog(
       barrierDismissible: false,
       context: context, 
       useRootNavigator: false,
       builder: (context) => ResultDialog(
+        operationType: OperationType.insert,
+        rootPath: rootPath,
         resultStream: results,
+        maxNumber: _selectedFiles!.length,
         onResultLoaded: dryRun ? null : () {
           refreshFiles();
         },

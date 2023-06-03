@@ -1,6 +1,6 @@
-import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
+import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,14 +104,13 @@ class _RenamePageState extends ConsumerState<RenamePage> {
       config: config,
       rootPath: rootPath,
       dryRun: dryRun
-    ).asBroadcastStream();
-    results.listen(
-      null,
-      onError: (e) => showErrorDialog(e, context)
     );
     showDialog(
       context: context, 
       builder: (context) => ResultDialog(
+        operationType: OperationType.rename,
+        rootPath: rootPath,
+        maxNumber: _selectedFiles!.length,
         resultStream: results,
         onResultLoaded: dryRun ? null : refreshFiles,
       )
