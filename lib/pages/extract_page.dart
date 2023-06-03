@@ -134,6 +134,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
         rootPath: rootPath,
         resultStream: results,
         maxNumber: _selectedFiles.length,
+        dryRun: dryRun,
         onResultLoaded: dryRun ? null : () {
           _selectedFiles.clear();
           refreshDirectories();

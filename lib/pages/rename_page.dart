@@ -112,6 +112,7 @@ class _RenamePageState extends ConsumerState<RenamePage> {
         rootPath: rootPath,
         maxNumber: _selectedFiles!.length,
         resultStream: results,
+        dryRun: dryRun,
         onResultLoaded: dryRun ? null : refreshFiles,
       )
     );

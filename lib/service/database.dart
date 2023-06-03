@@ -1,5 +1,7 @@
 import 'dart:io' show Directory;
+import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
+import 'package:filekraken/service/isar_dao/isar_file_result.dart';
 import 'package:filekraken/service/isar_dao/isar_list_variable.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +19,12 @@ abstract class Database{
   Future<ListVariable> modifyListVariable(ListVariable oldVariable, ListVariableData newVariable);
   Future<void> deleteListVariable(ListVariable variable);
   Stream<void> onListVariableChange();
+
+  // History
+
+  Future<List<ModuleOperationResult>> getModuleOperationResults();
+  Future<ModuleOperationResult> addModuleOperationResult(ModuleOperationResultData data);
+  Future<void> deleteModuleOperationResult(ModuleOperationResult data);
 }
 
 class IsarDatabase implements Database {
@@ -26,7 +34,7 @@ class IsarDatabase implements Database {
   @override
   Future<void> init() async {
     Directory dir = await getApplicationDocumentsDirectory();
-    isar = await Isar.open([ListVariableDAOSchema], directory: dir.path);
+    isar = await Isar.open([ListVariableDAOSchema, IsarModuleOperationResultSchema], directory: dir.path);
   }
 
   @override
@@ -65,5 +73,35 @@ class IsarDatabase implements Database {
     );
     isar.writeTxn(() => isar.listVariableDAOs.put(newVariable));
     return newVariable;
+  }
+
+  @override
+  Future<ModuleOperationResult> addModuleOperationResult(ModuleOperationResultData data) async {
+    IsarModuleOperationResult result = IsarModuleOperationResult(
+      isarFileResults: data
+        .fileResults
+        .map((e) => IsarFileOperationResult.fromFileResult(e))
+        .toList(),
+      dateTime: data.dateTime,
+      operationType: data.operationType,
+      rootPath: data.rootPath
+    );
+    int id = await isar.writeTxn<int>(() {
+      return isar.isarModuleOperationResults.put(result);
+    });
+    return result..id = id;
+  }
+
+  @override
+  Future<void> deleteModuleOperationResult(ModuleOperationResult data) async {
+    isar.writeTxn(() => isar.isarModuleOperationResults.delete(data.id));
+  }
+
+  @override
+  Future<List<ModuleOperationResult>> getModuleOperationResults() async {
+    return isar
+      .isarModuleOperationResults
+      .where()
+      .findAll();
   }
 }

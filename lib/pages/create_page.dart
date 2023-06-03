@@ -91,6 +91,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
         maxNumber: config.numberFiles,
         operationType: OperationType.create,
         rootPath: rootPath,
+        dryRun: dryRun,
       ),
     );
   }

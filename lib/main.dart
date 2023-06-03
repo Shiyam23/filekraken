@@ -3,12 +3,13 @@ import 'package:filekraken/theme/fk_dark_theme.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   ProviderContainer container = ProviderContainer();
+  await initializeDateFormatting('de_DE', null);
   runApp(UncontrolledProviderScope(
     container: container,
     child: const MyApp(),

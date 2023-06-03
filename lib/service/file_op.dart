@@ -190,6 +190,7 @@ Stream<FileOperationResult> extractFiles({
       fileTarget: targetPath, 
       operationType: OperationType.extract, 
       resultType: ResultType.fail,
+      error: ErrorType.none
     );
     if (rootPath == "") {
       yield result.copyWith(error: ErrorType.invalidRootPath);
@@ -258,7 +259,8 @@ Stream<FileOperationResult> insertFiles({
           fileSource: file.path, 
           fileTarget: target, 
           operationType: OperationType.insert, 
-          resultType: ResultType.fail
+          resultType: ResultType.fail,
+          error: ErrorType.none
         );
         if (await File(target).exists()) {
           yield result.copyWith(error: ErrorType.fileAlreadyExists);
@@ -296,7 +298,8 @@ Stream<FileOperationResult> insertFiles({
           fileSource: selectedFile.path, 
           fileTarget: target, 
           operationType: OperationType.insert, 
-          resultType: ResultType.fail
+          resultType: ResultType.fail,
+          error: ErrorType.none
         );
         if (await File(target).exists()) {
           yield result.copyWith(error: ErrorType.fileAlreadyExists);
@@ -353,7 +356,8 @@ Stream<FileOperationResult> createFiles({
           fileSource: rootPath, 
           fileTarget: target, 
           operationType: OperationType.create, 
-          resultType: ResultType.fail
+          resultType: ResultType.fail,
+          error: ErrorType.none
         );
         if (await newFile.exists()) {
           yield result.copyWith(error: ErrorType.fileAlreadyExists);
@@ -386,7 +390,8 @@ Stream<FileOperationResult> createFiles({
           fileSource: rootPath, 
           fileTarget: target, 
           operationType: OperationType.create, 
-          resultType: ResultType.fail
+          resultType: ResultType.fail,
+          error: ErrorType.none
         );
         if (await newFile.exists()) {
           yield result.copyWith(error: ErrorType.fileAlreadyExists);
@@ -428,7 +433,8 @@ Stream<FileOperationResult> renameFiles({
         fileTarget: newFilePath,
         operationType: OperationType.rename,
         resultType: ResultType.fail,
-        rootPath: rootPath
+        rootPath: rootPath,
+        error: ErrorType.none
       );
       if (!await oldFile.exists()) {
         yield result.copyWith(error: ErrorType.fileNotFound);

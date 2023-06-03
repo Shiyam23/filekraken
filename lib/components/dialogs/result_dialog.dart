@@ -1,29 +1,34 @@
 import 'dart:async';
 import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/model/file_result.dart';
+import 'package:filekraken/service/database.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ResultDialog extends StatefulWidget {
-  const ResultDialog(
-      {super.key,
-      required this.resultStream,
-      required this.operationType,
-      required this.rootPath,
-      required this.maxNumber,
-      this.onResultLoaded});
+class ResultDialog extends ConsumerStatefulWidget {
+  const ResultDialog({
+    super.key,
+    required this.resultStream,
+    required this.operationType,
+    required this.rootPath,
+    required this.maxNumber,
+    required this.dryRun,
+    this.onResultLoaded
+  });
 
   final OperationType operationType;
   final String rootPath;
   final int maxNumber;
   final Stream<FileOperationResult> resultStream;
   final void Function()? onResultLoaded;
+  final bool dryRun;
 
   @override
-  State<ResultDialog> createState() => _ResultDialogState();
+  ConsumerState<ResultDialog> createState() => _ResultDialogState();
 }
 
-class _ResultDialogState extends State<ResultDialog> {
+class _ResultDialogState extends ConsumerState<ResultDialog> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
   final List<FileOperationResult> results = [];
   final ValueNotifier<bool> dismissible = ValueNotifier(false);
@@ -33,20 +38,32 @@ class _ResultDialogState extends State<ResultDialog> {
   @override
   void initState() {
     sub = widget.resultStream.listen(
-      (event) {
-        results.add(event);
-        if (event.resultType != ResultType.fail) {
-          progress.value++;
-        }
-        _listKey.currentState?.insertItem(results.length - 1);
-      },
-      onDone: () {
+      _resultListener,
+      onDone: () async {
         widget.onResultLoaded?.call();
         dismissible.value = true;
+        if (!widget.dryRun) {
+          ref.read(database).addModuleOperationResult(
+            ModuleOperationResultData(
+              fileResults: results,
+              dateTime: DateTime.now(),
+              operationType: widget.operationType,
+              rootPath: widget.rootPath
+            )
+          );
+        }
       },
       onError: (e) => showErrorDialog(e, context),
     );
     super.initState();
+  }
+
+  void _resultListener(event) {
+    results.add(event);
+    if (event.resultType != ResultType.fail) {
+      progress.value++;
+    }
+    _listKey.currentState?.insertItem(results.length - 1);
   }
 
   @override
@@ -122,7 +139,7 @@ class _ResultDialogState extends State<ResultDialog> {
                   children: [
                     Text("Root Path: $rootPath"),
                     Text("Mode: ${results[index].operationType.toString()}"),
-                    if (error != null) getTextByErrorType(error)
+                    if (error != ErrorType.none) getTextByErrorType(error)
                   ],
                 );
               },
@@ -188,6 +205,8 @@ class _ResultDialogState extends State<ResultDialog> {
         return const Text("Other error");
       case ErrorType.noPermission:
         return const Text("No Permission");
+      case ErrorType.none:
+        return const Text("");
     }
   }
 }

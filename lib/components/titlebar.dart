@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:filekraken/components/titlebar/history_widget.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class TitleBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const VariableButton(),
+              const HistoryButton(),
               Expanded(
                 child: MoveWindow(
                   child: Container(

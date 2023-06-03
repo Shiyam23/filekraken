@@ -124,6 +124,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
         operationType: OperationType.insert,
         rootPath: rootPath,
         resultStream: results,
+        dryRun: dryRun,
         maxNumber: _selectedFiles!.length,
         onResultLoaded: dryRun ? null : () {
           refreshFiles();

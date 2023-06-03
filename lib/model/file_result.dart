@@ -1,14 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/foundation.dart';
 
 class ModuleOperationResult {
 
   ModuleOperationResult({
+    required this.id,
     required this.fileResults,
     required this.dateTime,
+    required this.operationType,
+    required this.rootPath,
   });
   
+  int id;
   final List<FileOperationResult> fileResults;
   final DateTime dateTime;
+  final OperationType operationType;
+  final String rootPath;
 
   @override
   bool operator ==(covariant ModuleOperationResult other) {
@@ -23,6 +30,20 @@ class ModuleOperationResult {
   int get hashCode => fileResults.hashCode ^ dateTime.hashCode;
 }
 
+class ModuleOperationResultData {
+  ModuleOperationResultData({
+    required this.fileResults,
+    required this.dateTime,
+    required this.operationType,
+    required this.rootPath,
+  });
+  
+  final List<FileOperationResult> fileResults;
+  final DateTime dateTime;
+  final OperationType operationType;
+  final String rootPath;
+}
+
 class FileOperationResult {
   
   FileOperationResult({
@@ -31,7 +52,7 @@ class FileOperationResult {
     required this.fileTarget,
     required this.operationType,
     required this.resultType,
-    this.error,
+    required this.error,
   });
 
   final String rootPath;
@@ -39,7 +60,7 @@ class FileOperationResult {
   final String fileTarget;
   final OperationType operationType;
   final ResultType resultType;
-  final ErrorType? error;
+  final ErrorType error;
 
   @override
   bool operator ==(covariant FileOperationResult other) {
@@ -109,5 +130,6 @@ enum ErrorType {
   fileAlreadyExists,
   pathAlreadyExists,
   other, 
-  noPermission
+  noPermission,
+  none
 }
