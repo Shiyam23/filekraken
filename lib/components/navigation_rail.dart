@@ -1,3 +1,4 @@
+import 'package:filekraken/layout.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -18,11 +19,10 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
-
     FKTheme theme = FKThemeWidget.of(context)!.theme;
-
+    final titlebarHeight = ref.watch(titlebarHeightProvider);
     return SizedBox(
-      height: MediaQuery.of(context).size.height - 50,
+      height: MediaQuery.of(context).size.height - titlebarHeight,
       child: NavigationRail(
         backgroundColor: theme.navBarBackgroundColor,
         extended: extended,
