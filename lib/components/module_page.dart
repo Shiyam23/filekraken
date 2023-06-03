@@ -476,9 +476,16 @@ class FilterNone extends ConsumerWidget {
       return ListView(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
-        children: state.fileEntities.map((e) => ListTile(
-          title: Text(basename(e)),
-          visualDensity: VisualDensity.compact,
+        children: state.fileEntities.map((e) => Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 2.0
+          ),
+          child: SelectableText(
+            basename(e),
+            style: const TextStyle(
+              fontSize: 17
+            ),
+          ),
         )).toList(),
       );
     } else {
