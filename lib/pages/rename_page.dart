@@ -89,11 +89,11 @@ class _RenamePageState extends ConsumerState<RenamePage> {
   }
 
   void rename({required bool dryRun}) async {
-    if (_selectedFiles == null || _selectedFiles!.isEmpty) {
-      // TODO: Show error message
+    if (!_formKey.currentState!.validate()) {
       return;
     }
-    if (!_formKey.currentState!.validate()) {
+    if (_selectedFiles == null || _selectedFiles!.isEmpty) {
+      // TODO: Show error message
       return;
     }
     String rootPath = ref.read(rootDirectoryProvider);
