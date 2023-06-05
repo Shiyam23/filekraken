@@ -1,13 +1,18 @@
+import 'package:filekraken/components/module_page.dart';
 import 'package:filekraken/layout.dart';
+import 'package:filekraken/pages/pages.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FKNavigationRail extends ConsumerStatefulWidget {
-  const FKNavigationRail({super.key, required this.pageIndex});
+StateProvider<int?> navigationRailSelectedIndexProvider = StateProvider(
+  (ref) => 0
+);
 
-  final ValueNotifier pageIndex;
+class FKNavigationRail extends ConsumerStatefulWidget {
+  
+  const FKNavigationRail({super.key});
 
   @override
   ConsumerState<FKNavigationRail> createState() => _FKNavigationRailState();
@@ -30,7 +35,7 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
         selectedIconTheme: theme.navBarSelectedIconStyle,
         unselectedLabelTextStyle: theme.navBarUnselectedTextStyle,
         unselectedIconTheme: theme.navBarUnselectedIconStyle,
-        selectedIndex: widget.pageIndex.value,
+        selectedIndex: ref.watch(navigationRailSelectedIndexProvider),
         minWidth: 60,
         minExtendedWidth: 200,
         destinations: const [
@@ -53,10 +58,14 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
           ),
         ],
         onDestinationSelected: (value) => setState(() {
-          if (value != widget.pageIndex.value) {
-            widget.pageIndex.value = value;
+          final selectedIndexNotifier = ref.read(navigationRailSelectedIndexProvider.notifier);
+          if (value != selectedIndexNotifier.state) {
+            ref.read(navigatorProvider).currentState?.pushReplacementNamed(
+              ref.read(pageProvider).keys.toList()[value]     
+            );
             ref.read(fileListStateProvider.notifier).reset();
             ref.read(directoryListStateProvider.notifier).reset();
+            selectedIndexNotifier.state = value;
           }
         }),
         trailing: Expanded(

@@ -1,8 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/components/unit.dart';
+import 'package:filekraken/layout.dart';
 import 'package:filekraken/model/file_content.dart';
-import 'package:filekraken/pages/extract_page.dart';
-import 'package:filekraken/pages/insert_page.dart';
+import 'package:filekraken/model/file_result.dart';
+import 'package:filekraken/pages/pages.dart';
 import 'package:filekraken/service/file_op.dart';
 import 'package:filekraken/service/textfield_validators.dart';
 import 'package:flutter/material.dart';
@@ -11,48 +12,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import '../service/group_config.dart';
 import '../service/modifer_parser.dart';
-import '../pages/create_page.dart';
-import '../pages/rename_page.dart';
 
 typedef OnFilterModeChange = void Function(FilterMode filterMode);
 
-class ModulePage extends StatefulWidget {
+Provider<GlobalKey<NavigatorState>> navigatorProvider = Provider((_) => GlobalKey<NavigatorState>());
+
+class ModulePage extends ConsumerWidget {
   
-  ModulePage({super.key, required this.pageIndex, required this.titleBarHeight});
-
-  final double titleBarHeight;
-  final ValueNotifier pageIndex;
-  final List<Widget> pages = [
-    const ExtractPage(),
-    const InsertPage(),
-    const CreatePage(),
-    const RenamePage(),
-  ];
+  const ModulePage({super.key});
 
   @override
-  State<ModulePage> createState() => _ModulePageState();
-}
-
-class _ModulePageState extends State<ModulePage> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    double titleBarHeight = ref.watch(titlebarHeightProvider);
     return Expanded(
-      child: AnimatedBuilder(
-        animation: widget.pageIndex,
-        builder: (BuildContext context, Widget? child) {
-          return Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height - widget.titleBarHeight,
-                  child: SingleChildScrollView(
-                    child: widget.pages[widget.pageIndex.value]
-                  ),
-                )
-              ),
-            ],
-          );
-        },
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height - titleBarHeight,
+        child: Navigator(
+          key: ref.watch(navigatorProvider),
+          initialRoute: OperationType.extract.toString(),
+          onGenerateRoute: (settings) {
+            Widget? module = ref.read(pageProvider)[settings.name!];
+            if (module == null) {
+              throw ArgumentError("Unknown operation type");
+            }
+            return PageRouteBuilder(
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+              pageBuilder: (_, a, aa) => SingleChildScrollView(child: module),
+              settings: settings
+            );
+          },
+        ),
       ),
     );
   }

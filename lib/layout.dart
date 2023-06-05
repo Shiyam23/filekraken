@@ -8,9 +8,7 @@ Provider<double> titlebarHeightProvider = Provider((_) => 50);
 
 class Layout extends ConsumerWidget {
   
-  Layout({super.key});
-
-  final ValueNotifier<int> _pageIndex = ValueNotifier(0);
+  const Layout({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,14 +16,11 @@ class Layout extends ConsumerWidget {
     return Column(
       children: [
         TitleBar(height: titlebarHeight),
-        Row(
+        const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FKNavigationRail(pageIndex: _pageIndex),
-            ModulePage(
-              pageIndex: _pageIndex,
-              titleBarHeight: titlebarHeight,
-            )
+            FKNavigationRail(),
+            ModulePage()
           ],
         ),
       ],

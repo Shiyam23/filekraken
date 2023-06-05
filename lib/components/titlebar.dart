@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:filekraken/components/module_page.dart';
+import 'package:filekraken/components/navigation_rail.dart';
 import 'package:filekraken/components/titlebar/history_widget.dart';
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TitleBar extends StatelessWidget {
   
@@ -23,8 +26,14 @@ class TitleBar extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const VariableButton(),
-              const HistoryButton(),
+              const TitleBarMenuButton(
+                route: VariableListWidget(),
+                title: Text("Variables"),
+              ),
+              const TitleBarMenuButton(
+                route: HistoryWidget(),
+                title: Text("History"),
+              ),
               Expanded(
                 child: MoveWindow(
                   child: Container(
@@ -41,6 +50,47 @@ class TitleBar extends StatelessWidget {
             ]
           ),
         ),
+      ),
+    );
+  }
+}
+
+class TitleBarMenuButton extends ConsumerWidget {
+  const TitleBarMenuButton({
+    super.key,
+    required this.title,
+    required this.route
+  });
+
+  final Widget title;
+  final Widget route;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      alignment: Alignment.center,
+      child: OutlinedButton(
+        style: ButtonStyle(
+          fixedSize: const MaterialStatePropertyAll(Size(100, 40)),
+          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5)
+          )),
+          foregroundColor: const MaterialStatePropertyAll(Colors.white),
+          backgroundColor: const MaterialStatePropertyAll(Colors.blueGrey)
+        ),
+        child: title,
+        onPressed: () {
+          final GlobalKey<NavigatorState> navigatorKey = ref.read(navigatorProvider);
+          navigatorKey.currentState?.pushReplacement(
+            PageRouteBuilder(
+              reverseTransitionDuration: Duration.zero,
+              transitionDuration: Duration.zero,
+              pageBuilder: (context, a, aa) => route
+            )
+          );
+          ref.read(navigationRailSelectedIndexProvider.notifier).state = null;
+        }
       ),
     );
   }

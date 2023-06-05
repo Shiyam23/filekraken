@@ -53,34 +53,6 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
   }
 }
 
-class VariableButton extends StatelessWidget {
-  const VariableButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      alignment: Alignment.center,
-      child: OutlinedButton(
-        style: ButtonStyle(
-          fixedSize: const MaterialStatePropertyAll(Size(100, 40)),
-          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5)
-          )),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-          backgroundColor: const MaterialStatePropertyAll(Colors.blueGrey)
-        ),
-        child: const Text("Variables"),
-        onPressed: () => showDialog(
-          context: context, 
-          useSafeArea: false,
-          builder: (context) => const VariableListWidget()
-        )
-      ),
-    );
-  }
-}
-
 class VariableListWidget extends ConsumerStatefulWidget {
   const VariableListWidget({super.key});
 
@@ -93,62 +65,55 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   @override
   Widget build(BuildContext context) {
     List<Variable> variableList = ref.watch(variableListProvider).values.toList();
-    return Dialog(
-      alignment: Alignment.center,
-      child: SizedBox(
-        width: 800,
-        height: 600,
-        child: Stack(
-          children: [
-            SizedBox.expand(
-              child: DataTable(
-                showCheckboxColumn: false,
-                columns: const [
-                  DataColumn(label: Text("Name")),
-                  DataColumn(label: Text("Identifier")),
-                  DataColumn(label: Text("Description")),
-                  DataColumn(label: Text("")),
-                ], 
-                rows: variableList.map((e) {
-                  bool isPredefined = e is IndexVariable || e is DeleteVariable;
-                  return DataRow(
-                  onSelectChanged: isPredefined ? null : (_) => modifyVariable(context, e),
-                  cells: [
-                    DataCell(
-                      Text(e.name), 
-                      placeholder: isPredefined
-                    ),
-                    DataCell(
-                      Text("[${e.identifier}]"),
-                      placeholder: isPredefined
-                    ),
-                    DataCell(
-                      Text(e.getDescription()),
-                      placeholder: isPredefined
-                    ),
-                    DataCell(
-                      isPredefined ? const SizedBox.shrink() : IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => deleteVariable(e),
-                      ),
-                      placeholder: isPredefined
-                    ),
-                  ]
-                );
-                }).toList()
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(10),
-              alignment: Alignment.bottomRight,
-              child: FloatingActionButton(
-                child: const Icon(Icons.add),
-                onPressed: () => addVariable(context)
-              ),
-            )
-          ],
+    return Stack(
+      children: [
+        SizedBox.expand(
+          child: DataTable(
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text("Name")),
+              DataColumn(label: Text("Identifier")),
+              DataColumn(label: Text("Description")),
+              DataColumn(label: Text("")),
+            ], 
+            rows: variableList.map((e) {
+              bool isPredefined = e is IndexVariable || e is DeleteVariable;
+              return DataRow(
+              onSelectChanged: isPredefined ? null : (_) => modifyVariable(context, e),
+              cells: [
+                DataCell(
+                  Text(e.name), 
+                  placeholder: isPredefined
+                ),
+                DataCell(
+                  Text("[${e.identifier}]"),
+                  placeholder: isPredefined
+                ),
+                DataCell(
+                  Text(e.getDescription()),
+                  placeholder: isPredefined
+                ),
+                DataCell(
+                  isPredefined ? const SizedBox.shrink() : IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => deleteVariable(e),
+                  ),
+                  placeholder: isPredefined
+                ),
+              ]
+            );
+            }).toList()
+          ),
         ),
-      ),
+        Container(
+          padding: const EdgeInsets.all(10),
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () => addVariable(context)
+          ),
+        )
+      ],
     );
   }
 

@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
               theme: initialTheme.themeData,
               restorationScopeId: "filekraken",
               debugShowCheckedModeBanner: false,
-              home: Scaffold(
+              home: const Scaffold(
                 body: Layout()
               )
             );

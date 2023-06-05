@@ -27,37 +27,6 @@ class HistoryNotifier extends StateNotifier<List<ModuleOperationResult>> {
   }
 }
 
-class HistoryButton extends ConsumerWidget {
-  const HistoryButton({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      alignment: Alignment.center,
-      child: OutlinedButton(
-        style: ButtonStyle(
-          fixedSize: const MaterialStatePropertyAll(Size(100, 40)),
-          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5)
-          )),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-          backgroundColor: const MaterialStatePropertyAll(Colors.blueGrey)
-        ),
-        child: const Text("History"),
-        onPressed: () {
-          showDialog(
-            context: context, 
-            useSafeArea: false,
-            builder: (context) => const HistoryWidget()
-          );
-          ref.read(historyProvider.notifier).refresh();
-        }
-      ),
-    );
-  }
-}
-
 class HistoryWidget extends ConsumerStatefulWidget {
   const HistoryWidget({super.key});
 
@@ -70,34 +39,32 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
   @override
   Widget build(BuildContext context) {
     List<ModuleOperationResult> entries = ref.watch(historyProvider);
-    return Dialog(
-      child: ListView(
-        children: entries
-        .map((m) {
-        int success = m.fileResults
-        .where((f) => f.resultType == ResultType.success)
-        .toList()
-        .length;
-        return ExpansionTile(
-          title: Row(
-            children: [
-              Text(m.operationType.toString()),
-              const SizedBox(width: 20),
-              Text(DateFormat.yMd().format(m.dateTime)),
-              const SizedBox(width: 20),
-              Text("Success: $success / ${m.fileResults.length}"),
-            ],
-          ),
-          children: m.fileResults
-          .map((f) => ListTile(
-            title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
-            subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
-            trailing: Text(f.resultType.toString()),
-          ))
-          .toList(),
-          );
-        }).toList(),
-      ),
+    return ListView(
+      children: entries
+      .map((m) {
+      int success = m.fileResults
+      .where((f) => f.resultType == ResultType.success)
+      .toList()
+      .length;
+      return ExpansionTile(
+        title: Row(
+          children: [
+            Text(m.operationType.toString()),
+            const SizedBox(width: 20),
+            Text(DateFormat.yMd().format(m.dateTime)),
+            const SizedBox(width: 20),
+            Text("Success: $success / ${m.fileResults.length}"),
+          ],
+        ),
+        children: m.fileResults
+        .map((f) => ListTile(
+          title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
+          subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
+          trailing: Text(f.resultType.toString()),
+        ))
+        .toList(),
+        );
+      }).toList(),
     );
   }
 }

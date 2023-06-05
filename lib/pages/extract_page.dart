@@ -128,7 +128,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
     await showDialog(
       barrierDismissible: false,
       context: context, 
-      //useRootNavigator: false,
+      useRootNavigator: false,
       builder: (context) => ResultDialog(
         operationType: OperationType.extract,
         rootPath: rootPath,
