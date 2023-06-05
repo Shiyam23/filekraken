@@ -20,20 +20,10 @@ class TitleBar extends StatelessWidget {
     return SizedBox(
       height: height,
       child: WindowTitleBarBox(
-        child: Container(
-          padding: Platform.isMacOS ? const EdgeInsets.only(left: 70) : EdgeInsets.zero,
+        child: ColoredBox(
           color: const Color(0xFF18212B),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              const TitleBarMenuButton(
-                route: VariableListWidget(),
-                title: Text("Variables"),
-              ),
-              const TitleBarMenuButton(
-                route: HistoryWidget(),
-                title: Text("History"),
-              ),
               Expanded(
                 child: MoveWindow(
                   child: Container(
@@ -42,12 +32,28 @@ class TitleBar extends StatelessWidget {
                   ),
                 )
               ),
-              MinimizeWindowButton(colors: theme.windowButtonColors),
-              appWindow.isMaximized ? 
-                RestoreWindowButton(colors: theme.windowButtonColors) : 
-                MaximizeWindowButton(colors: theme.windowButtonColors),
-              CloseWindowButton(colors: theme.closeButtonColors,)
-            ]
+              Padding(
+                padding: Platform.isMacOS ? const EdgeInsets.only(left: 70) : EdgeInsets.zero,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const TitleBarMenuButton(
+                      route: VariableListWidget(),
+                      title: Text("Variables"),
+                    ),
+                    const TitleBarMenuButton(
+                      route: HistoryWidget(),
+                      title: Text("History"),
+                    ),
+                    MinimizeWindowButton(colors: theme.windowButtonColors),
+                    appWindow.isMaximized ? 
+                      RestoreWindowButton(colors: theme.windowButtonColors) : 
+                      MaximizeWindowButton(colors: theme.windowButtonColors),
+                    CloseWindowButton(colors: theme.closeButtonColors,)
+                  ]
+                ),
+              ),
+            ],
           ),
         ),
       ),
