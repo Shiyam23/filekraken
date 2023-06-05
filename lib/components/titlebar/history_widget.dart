@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/service/database.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +60,7 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
           children: [
             Text(m.operationType.toString()),
             const SizedBox(width: 20),
-            Text(DateFormat.yMd().format(m.dateTime)),
+            Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
             const SizedBox(width: 20),
             Text("Success: $success / ${m.fileResults.length}"),
           ],
