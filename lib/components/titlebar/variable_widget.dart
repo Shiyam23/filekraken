@@ -1,3 +1,4 @@
+import 'package:filekraken/components/module_page.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/database.dart';
 import 'package:filekraken/service/modifer_parser.dart';
@@ -121,14 +122,16 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
     if (e is! ListVariable) {
       throw ArgumentError.value(e, "e", "e is not a ListVariable");
     }
-    ListVariableData? result = await showDialog<ListVariableData>(
-      context: context, 
-      builder: (context) => ListVariableEdit(
-        initialName: e.name,
-        initialIdentifier: e.identifier,
-        initialContent: e.content,
-        initialLoop: e.loop,
-      )
+    ListVariableData? result = await ref.read(navigatorProvider).currentState?.push(
+      DialogRoute(
+        context: context,
+        builder: (context) => ListVariableEdit(
+          initialName: e.name,
+          initialIdentifier: e.identifier,
+          initialContent: e.content,
+          initialLoop: e.loop,
+        )
+      ),
     );
     if (result != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
@@ -137,9 +140,11 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   }
 
   void addVariable(BuildContext context) async {
-    ListVariableData? newVariable = await showDialog<ListVariableData>(
-      context: context, 
-      builder: (_) => const ListVariableEdit()
+    ListVariableData? newVariable = await ref.read(navigatorProvider).currentState?.push(
+      DialogRoute(
+        context: context, 
+        builder: (_) => const ListVariableEdit()
+      )
     );
     if (newVariable != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);

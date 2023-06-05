@@ -37,6 +37,14 @@ class HistoryWidget extends ConsumerStatefulWidget {
 class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(historyProvider.notifier).refresh();
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<ModuleOperationResult> entries = ref.watch(historyProvider);
     return ListView(
