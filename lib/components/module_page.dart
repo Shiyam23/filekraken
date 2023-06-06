@@ -4,7 +4,7 @@ import 'package:filekraken/layout.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/pages/pages.dart';
-import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/file_read_op.dart';
 import 'package:filekraken/service/textfield_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

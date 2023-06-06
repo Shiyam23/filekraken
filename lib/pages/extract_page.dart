@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/model/file_result.dart';
-import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/file_read_op.dart';
 import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
