@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:filekraken/model/file_result.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:riverpod/riverpod.dart';
@@ -124,46 +123,4 @@ class FileEntityLoadedState extends FileEntityState {
 
   @override
   int get hashCode => Object.hashAll([...fileEntities, type]);
-}
-
-FileOperationResult _handleError({
-  required FileOperationResult initialResult,
-  required Object error
-}) {
-  if (error is! Exception && error is! Error) {
-    throw ArgumentError.value(error, "error", "error must be of type Error or Exception");
-  }
-  if (error is! FileSystemException) {
-    return initialResult.copyWith(error: ErrorType.other);
-  }
-  ErrorType errorType;
-  switch (defaultTargetPlatform) {
-    case TargetPlatform.windows:
-      switch (error.osError?.errorCode) {
-        case 2:
-          errorType = ErrorType.fileNotFound; break;
-        case 3:
-          errorType = ErrorType.pathNotFound; break;
-        case null:
-        default:
-          errorType = ErrorType.other;
-      }
-      break;
-    case TargetPlatform.linux:
-    case TargetPlatform.macOS:
-      switch (error.osError?.errorCode) {
-        case 1:
-          errorType = ErrorType.noPermission; break;
-        case 2:
-          errorType = ErrorType.pathNotFound; break;
-        case 17:
-          errorType = ErrorType.fileAlreadyExists; break;
-        case null:
-        default:
-          errorType = ErrorType.other;
-      }
-      break;
-    default: throw UnsupportedError("OS not supported");
-  }
-  return initialResult.copyWith(error: errorType);
 }
