@@ -3,6 +3,7 @@ import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +76,9 @@ class _CreatePageState extends ConsumerState<CreatePage> {
       return;
     }
     Map<String, Variable> variables = ref.read(variableListProvider);
-    Stream<FileOperationResult> results = createFiles(
+    CreateOperation operation 
+      = ref.read(operationProvider)[OperationType.create]! as CreateOperation;
+    Stream<FileOperationResult> results = operation.createFiles(
       fileContent: fileContent,
       config: config,
       rootPath: rootPath,

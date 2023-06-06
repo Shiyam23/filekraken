@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:filekraken/components/dialogs/result_dialog.dart';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -119,7 +120,9 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
       return;
     }
     String rootPath = ref.read(rootDirectoryProvider);
-    Stream<FileOperationResult> results = extractFiles(
+    ExtractOperation operation 
+      = ref.read(operationProvider)[OperationType.extract]! as ExtractOperation;
+    Stream<FileOperationResult> results = operation.extractFiles(
       selectedFiles: _selectedFiles, 
       rootPath: rootPath,
       dryRun: dryRun

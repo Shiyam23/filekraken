@@ -3,6 +3,7 @@ import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +99,9 @@ class _RenamePageState extends ConsumerState<RenamePage> {
     }
     String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
-    Stream<FileOperationResult> results = renameFiles(
+    RenameOperation operation 
+      = ref.read(operationProvider)[OperationType.rename]! as RenameOperation;
+    Stream<FileOperationResult> results = operation.renameFiles(
       selectedFiles: _selectedFiles!,
       variables: variables,
       config: config,

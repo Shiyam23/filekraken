@@ -3,6 +3,7 @@ import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_op.dart';
+import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -108,7 +109,9 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     if (_selectedFiles == null || _selectedFiles!.isEmpty) {
       return;
     }
-    Stream<FileOperationResult> results = insertFiles(
+    InsertOperation operation 
+      = ref.read(operationProvider)[OperationType.insert]! as InsertOperation;
+    Stream<FileOperationResult> results = operation.insertFiles(
       selectedFiles: _selectedFiles!, 
       rootPath: rootPath, 
       dryRun: dryRun, 
