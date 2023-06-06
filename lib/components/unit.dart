@@ -20,11 +20,11 @@ class DynamicUnit<T extends Translatable> extends StatefulWidget {
 
 class _DynamicUnitState<T extends Translatable> extends State<DynamicUnit<T>> {
 
-  late T filterMode;
+  late T subunitMode;
 
   @override
   void initState() {
-    filterMode = widget.initialSubunit ?? widget.subunits.keys.first;
+    subunitMode = widget.initialSubunit ?? widget.subunits.keys.first;
     super.initState();
   }
 
@@ -58,7 +58,7 @@ class _DynamicUnitState<T extends Translatable> extends State<DynamicUnit<T>> {
                     child: DropdownButton<T>(
                       isExpanded: true,
                       underline: const SizedBox.shrink(),
-                      value: filterMode,
+                      value: subunitMode,
                       alignment: Alignment.center,
                       borderRadius: BorderRadius.circular(20),
                       style: const TextStyle(
@@ -74,9 +74,9 @@ class _DynamicUnitState<T extends Translatable> extends State<DynamicUnit<T>> {
                       )
                       .toList(),
                       onChanged: (T? mode) {
-                        if (mode != null && filterMode != mode) {
+                        if (mode != null && subunitMode != mode) {
                           setState(() {
-                            filterMode = mode;
+                            subunitMode = mode;
                             widget.onSubunitChange?.call(mode);
                           });
                         }
@@ -86,7 +86,7 @@ class _DynamicUnitState<T extends Translatable> extends State<DynamicUnit<T>> {
                 )
               ],
             ),
-            widget.subunits[filterMode]!
+            widget.subunits[subunitMode]!
            ],
         ),
       ),
