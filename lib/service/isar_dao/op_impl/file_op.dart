@@ -115,8 +115,11 @@ class ExtractOperation extends Operation{
   }
 
   @override
-  void revertSingle(FileOperationResult fileResult) {
-    throw UnimplementedError();
+  void revertSingle(FileOperationResult fileResult) async {
+    Directory parentDirectory = Directory(path.dirname(fileResult.fileSource));
+    await parentDirectory.create(recursive: true);
+    File target = File(fileResult.fileTarget);
+    await target.rename(fileResult.fileSource);
   }
 }
 class InsertOperation extends Operation{
@@ -232,10 +235,18 @@ class InsertOperation extends Operation{
   }
 
   @override
-  void revertSingle(FileOperationResult fileResult) {
-    throw UnimplementedError();
+  void revertSingle(FileOperationResult fileResult) async {
+    File insertedFile = File(fileResult.fileTarget);
+    if (await insertedFile.exists()) {
+      insertedFile.rename(fileResult.fileSource);
+    }
+    Directory parentDirectory = Directory(path.dirname(fileResult.fileTarget));
+    if ((await parentDirectory.list().toList()).isEmpty) {
+      await parentDirectory.delete();
+    }
   }
 }
+
 class CreateOperation extends Operation{
 
   Stream<FileOperationResult> createFiles({
@@ -330,8 +341,11 @@ class CreateOperation extends Operation{
   }
 
   @override
-  void revertSingle(FileOperationResult fileResult) {
-    throw UnimplementedError();
+  void revertSingle(FileOperationResult fileResult) async {
+    File createdFile = File(fileResult.fileTarget);
+    if (await createdFile.exists()) {
+      await createdFile.delete();
+    }
   }
 }
 class RenameOperation extends Operation{
@@ -380,7 +394,8 @@ class RenameOperation extends Operation{
   }
 
   @override
-  void revertSingle(FileOperationResult fileResult) {
-    throw UnimplementedError();
+  void revertSingle(FileOperationResult fileResult) async {
+    File target = File(fileResult.fileTarget);
+    target.rename(fileResult.fileSource);
   }
 }

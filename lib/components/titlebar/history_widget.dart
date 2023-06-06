@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/service/database.dart';
+import 'package:filekraken/service/isar_dao/op_impl/file_op.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -63,6 +64,11 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
             Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
             const SizedBox(width: 20),
             Text("Success: $success / ${m.fileResults.length}"),
+            const Spacer(),
+            TextButton(
+              onPressed: () => _onModuleRevertPressed(m), 
+              child: const Text("Revert"),
+            )
           ],
         ),
         children: m.fileResults
@@ -75,5 +81,9 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
         );
       }).toList(),
     );
+  }
+
+  void _onModuleRevertPressed(ModuleOperationResult m) {
+    ref.read(operationProvider)[m.operationType]!.revert(m);
   }
 }
