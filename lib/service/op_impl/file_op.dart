@@ -116,12 +116,16 @@ class ExtractOperation extends Operation{
 
   @override
   void revertSingle(FileOperationResult fileResult) async {
-    Directory parentDirectory = Directory(path.dirname(fileResult.fileSource));
-    await parentDirectory.create(recursive: true);
     File target = File(fileResult.fileTarget);
-    await target.rename(fileResult.fileSource);
+    File source = File(fileResult.fileSource);
+    if (await target.exists() && !await source.exists()) {
+      Directory parentDirectory = Directory(path.dirname(fileResult.fileSource));
+      await parentDirectory.create(recursive: true);
+      await target.rename(fileResult.fileSource);
+    }
   }
 }
+
 class InsertOperation extends Operation{
 
   Stream<FileOperationResult> insertFiles({
@@ -237,7 +241,8 @@ class InsertOperation extends Operation{
   @override
   void revertSingle(FileOperationResult fileResult) async {
     File insertedFile = File(fileResult.fileTarget);
-    if (await insertedFile.exists()) {
+    File sourceFile = File(fileResult.fileSource);
+    if (await insertedFile.exists() && !await sourceFile.exists()) {
       insertedFile.rename(fileResult.fileSource);
     }
     Directory parentDirectory = Directory(path.dirname(fileResult.fileTarget));
@@ -348,6 +353,7 @@ class CreateOperation extends Operation{
     }
   }
 }
+
 class RenameOperation extends Operation{
 
   Stream<FileOperationResult> renameFiles({
@@ -396,6 +402,9 @@ class RenameOperation extends Operation{
   @override
   void revertSingle(FileOperationResult fileResult) async {
     File target = File(fileResult.fileTarget);
-    target.rename(fileResult.fileSource);
+    File source = File(fileResult.fileSource);
+    if (await target.exists() && !await source.exists()) {
+      target.rename(fileResult.fileSource);
+    }
   }
 }
