@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 class ModuleOperationResult {
@@ -114,11 +115,32 @@ enum ResultType {
   dryRun
 }
 
+extension ResultTypeString on ResultType {
+  String toTranslatedString(BuildContext context) {
+    return switch (this) {
+      ResultType.success => "Success",
+      ResultType.fail => "Fail",
+      ResultType.dryRun => "DryRun",
+    };
+  }
+}
+
 enum OperationType {
   extract,
   insert,
   create,
   rename,
+}
+
+extension OperationTypeString on OperationType {
+  String toTranslatedString(BuildContext context) {
+    return switch (this) {
+      OperationType.extract => "Extract",
+      OperationType.insert => "Insert",
+      OperationType.create => "Create",
+      OperationType.rename => "Rename",
+    };
+  }
 }
 
 enum ErrorType {

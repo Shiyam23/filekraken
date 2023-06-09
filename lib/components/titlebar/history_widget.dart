@@ -60,7 +60,7 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
       return ExpansionTile(
         title: Row(
           children: [
-            Text(m.operationType.toString()),
+            Text(m.operationType.toTranslatedString(context)),
             const SizedBox(width: 20),
             Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
             const SizedBox(width: 20),
@@ -76,7 +76,7 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
         .map((f) => ListTile(
           title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
           subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
-          trailing: Text(f.resultType.toString()),
+          trailing: Text(f.resultType.toTranslatedString(context)),
         ))
         .toList(),
         );
