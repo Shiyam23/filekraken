@@ -79,8 +79,8 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
               ),
               children: m.fileResults
               .map((f) => ListTile(
-                title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
-                subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
+                title: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
+                subtitle: Text("Old: ${f.fileSource.replaceFirst(f.rootPath, "")}"),
                 trailing: Text(f.resultType.toTranslatedString(context)),
               ))
               .toList(),
