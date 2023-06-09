@@ -43,6 +43,7 @@ class TitleBar extends StatelessWidget {
                       route: HistoryWidget(),
                       title: Text("History"),
                     ),
+                    const Spacer(),
                     MinimizeWindowButton(colors: theme.windowButtonColors),
                     appWindow.isMaximized ? 
                       RestoreWindowButton(colors: theme.windowButtonColors) : 
