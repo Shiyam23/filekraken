@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/service/database.dart';
 import 'package:filekraken/service/op_impl/file_op.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -57,29 +56,38 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
       .where((f) => f.resultType == ResultType.success)
       .toList()
       .length;
-      return ExpansionTile(
-        title: Row(
-          children: [
-            Text(m.operationType.toTranslatedString(context)),
-            const SizedBox(width: 20),
-            Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
-            const SizedBox(width: 20),
-            Text("Success: $success / ${m.fileResults.length}"),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _onModuleRevertPressed(m), 
-              child: const Text("Revert"),
-            )
-          ],
-        ),
-        children: m.fileResults
-        .map((f) => ListTile(
-          title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
-          subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
-          trailing: Text(f.resultType.toTranslatedString(context)),
-        ))
-        .toList(),
-        );
+      bool showRevert = false;
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return MouseRegion(
+            onEnter: (_) => setState(() => showRevert = true),
+            onExit: (_) =>  setState(() => showRevert = false),
+            child: ExpansionTile(
+              title: Row(
+                children: [
+                  Text(m.operationType.toTranslatedString(context)),
+                  const SizedBox(width: 20),
+                  Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
+                  const SizedBox(width: 20),
+                  Text("Success: $success / ${m.fileResults.length}"),
+                  const Spacer(),
+                  if (showRevert) TextButton(
+                    onPressed: () => _onModuleRevertPressed(m), 
+                    child: const Text("Revert"),
+                  )
+                ],
+              ),
+              children: m.fileResults
+              .map((f) => ListTile(
+                title: Text(f.fileSource.replaceFirst(f.rootPath, "")),
+                subtitle: Text(f.fileTarget.replaceFirst(f.rootPath, "")),
+                trailing: Text(f.resultType.toTranslatedString(context)),
+              ))
+              .toList(),
+            ),
+          );
+        }
+      );
       }).toList(),
     );
   }
