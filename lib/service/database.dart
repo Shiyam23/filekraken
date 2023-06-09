@@ -33,7 +33,7 @@ class IsarDatabase implements Database {
 
   @override
   Future<void> init() async {
-    Directory dir = await getApplicationDocumentsDirectory();
+    Directory dir = await getApplicationSupportDirectory();
     isar = await Isar.open([ListVariableDAOSchema, IsarModuleOperationResultSchema], directory: dir.path);
   }
 
