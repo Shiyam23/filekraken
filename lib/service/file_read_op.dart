@@ -22,7 +22,8 @@ class FileListStateNotifier extends StateNotifier<FileEntityState> {
     state = const FileEntityLoading();
     List<String> files = [];
     for (String directory in directoryPaths) {
-      files.addAll(await getFileEntityPath(directory, FileSystemEntityType.file, depth));
+      List<String> entities = await getFileEntityPath<File>(directory, depth);
+      files.addAll(entities);
     }
     state = FileEntityLoadedState(fileEntities: files, type: FileSystemEntityType.file);
   }
@@ -43,7 +44,7 @@ class DirectoryListStateNotifier extends StateNotifier<FileEntityState> {
     bool shouldRefreshFiles = true
   }) async {
     state = const FileEntityLoading();
-    List<String> fileEntityPaths = await getFileEntityPath(rootPath, FileSystemEntityType.directory, depth);
+    List<String> fileEntityPaths = await getFileEntityPath<Directory>(rootPath, depth);
     state = FileEntityLoadedState(fileEntities: fileEntityPaths, type: FileSystemEntityType.directory);
     if (shouldRefreshFiles) {
       ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths, 0);
@@ -56,9 +57,8 @@ class DirectoryListStateNotifier extends StateNotifier<FileEntityState> {
   }
 }
 
-Future<List<String>> getFileEntityPath(
+Future<List<String>> getFileEntityPath<T extends FileSystemEntity>(
   String rootPath, 
-  FileSystemEntityType fileEntityType, 
   int depth
 ) async {
   if (depth < 0) {
@@ -71,12 +71,12 @@ Future<List<String>> getFileEntityPath(
   if (depth > 0 && directories.isNotEmpty) {
     for (Directory directory in directories) {
       entities.addAll(
-        (await getFileEntityPath(directory.path, fileEntityType, depth-1))
+        (await getFileEntityPath<T>(directory.path, depth-1))
         .map((e) {
-          switch (fileEntityType) {
-            case FileSystemEntityType.directory:
+          switch (T) {
+            case Directory:
               return Directory(e);
-            case FileSystemEntityType.file:
+            case File:
               return File(e);
             default:
               throw ArgumentError("Invalid fileSystemEntityType");
@@ -85,11 +85,12 @@ Future<List<String>> getFileEntityPath(
       );
     }
   }
-  return entities
-    .where((FileSystemEntity fe) => FileSystemEntity.typeSync(fe.path) == fileEntityType)
-    .where((FileSystemEntity fe) => !path.basename(fe.path).startsWith("."))
-    .map((FileSystemEntity fe) => fe.path)
+  List<String> newEntities = entities
+    .whereType<T>()
+    .where((T fe) => !path.basename(fe.path).startsWith("."))
+    .map((T fe) => fe.path)
     .toList();
+  return newEntities;
 }
 
 @immutable
