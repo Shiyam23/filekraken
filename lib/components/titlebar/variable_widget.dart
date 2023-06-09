@@ -19,8 +19,8 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
   };
 
   void init() async {
-    _refresh();
-    ref.read(database).onListVariableChange().listen((event) => _refresh());
+    refresh();
+    ref.read(database).onListVariableChange().listen((event) => refresh());
   }
 
   void addVariable(ListVariableData variable) async {
@@ -45,7 +45,7 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
     };
   }
 
-  void _refresh() async{
+  void refresh() async{
     final listVariables = await ref.read(database).getListVariables();
     state = {
       ...predefinedVariables,
@@ -62,6 +62,14 @@ class VariableListWidget extends ConsumerStatefulWidget {
 }
 
 class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(variableListProvider.notifier).refresh();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +105,9 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
                 DataCell(
                   isPredefined ? const SizedBox.shrink() : IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => deleteVariable(e),
+                    onPressed: () {
+                      deleteVariable(e);
+                    },
                   ),
                   placeholder: isPredefined
                 ),
