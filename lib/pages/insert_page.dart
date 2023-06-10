@@ -84,10 +84,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
 
   void onRootDirectorySelected(String rootPath) {
     ref.read(rootDirectoryProvider.notifier).state = rootPath;
-    ref.read(directoryListStateProvider.notifier).emitDirectories(
-      rootPath: rootPath,
-      depth: 0
-    );
+    ref.read(fileListStateProvider.notifier).emitFiles([rootPath], 0);
   }
 
   void refreshFiles() async {

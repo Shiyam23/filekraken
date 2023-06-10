@@ -21,10 +21,10 @@ abstract class Database{
   Stream<void> onListVariableChange();
 
   // History
-
   Future<List<ModuleOperationResult>> getModuleOperationResults();
   Future<ModuleOperationResult> addModuleOperationResult(ModuleOperationResultData data);
   Future<void> deleteModuleOperationResult(ModuleOperationResult data);
+  
 }
 
 class IsarDatabase implements Database {
