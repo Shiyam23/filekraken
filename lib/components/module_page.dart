@@ -290,7 +290,7 @@ class FilterByNameSubUnit extends ConsumerStatefulWidget {
 class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
   
   final TextEditingController _controller = TextEditingController();
-  int _dropDownButtonValue = 0;
+  StringMatchMode stringMatchMode = StringMatchMode.contains;
 
   @override
   Widget build(BuildContext context) {
@@ -304,25 +304,25 @@ class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
         children: [
           Row(
             children: [
-              DropdownButton(
-                value: _dropDownButtonValue,
+              DropdownButton<StringMatchMode>(
+                value: stringMatchMode,
                 items: const [
                   DropdownMenuItem(
-                    value: 0,
+                    value: StringMatchMode.contains,
                     child: Text("Contains"),
                   ),
                   DropdownMenuItem(
-                    value: 1,
+                    value: StringMatchMode.prefix,
                     child: Text("Prefix"),
                   ),
                   DropdownMenuItem(
-                    value: 2,
+                    value: StringMatchMode.suffix,
                     child: Text("Suffix"),
                   ),
                 ], 
                 onChanged: (i) => setState(() {
-                  if (i != null && i != _dropDownButtonValue) {
-                    _dropDownButtonValue = i;
+                  if (i != null && i != stringMatchMode) {
+                    stringMatchMode = i;
                   }
                 })
               ),
@@ -363,7 +363,13 @@ class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
   List<String> filterByName(List<String> fileEntities, bool showOnlyBasename) {
     return fileEntities
     .map((e) => showOnlyBasename ? basename(e) : e)
-    .where((element) => basename(element).contains(_controller.text))
+    .where((element) {
+      return switch (stringMatchMode) {
+        StringMatchMode.contains => basename(element).contains(_controller.text),
+        StringMatchMode.prefix => basename(element).startsWith(_controller.text),
+        StringMatchMode.suffix => basename(element).endsWith(_controller.text),
+      };
+    })
     .toList();
   }
 
@@ -372,6 +378,12 @@ class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
     _controller.dispose();
     super.dispose();
   }
+}
+
+enum StringMatchMode {
+  prefix,
+  suffix,
+  contains
 }
 
 class FilterBySelection extends ConsumerStatefulWidget {
