@@ -109,14 +109,19 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     }
     InsertOperation operation 
       = ref.read(operationProvider)[OperationType.insert]! as InsertOperation;
-    Stream<FileOperationResult> results = operation.insertFiles(
-      selectedFiles: _selectedFiles!, 
-      rootPath: rootPath, 
-      dryRun: dryRun, 
-      pathModifierConfig: pathModifierConfig, 
-      groupConfig: groupConfig, 
-      variables: variables
+    final (assignment, count) = operation.getAssignment(
+      selectedFiles: _selectedFiles!,
+      groupConfig: groupConfig,
+      variables: variables,
+      pathModifierConfig: pathModifierConfig
     );
+    Stream<FileOperationResult> results = operation.insertFiles(
+        selectedFiles: _selectedFiles!,
+        rootPath: rootPath, 
+        dryRun: dryRun, 
+        assignment: assignment, 
+        variables: variables
+      );
     showDialog(
       barrierDismissible: false,
       context: context, 
@@ -126,7 +131,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
         rootPath: rootPath,
         resultStream: results,
         dryRun: dryRun,
-        maxNumber: _selectedFiles!.length,
+        maxNumber: count,
         onResultLoaded: dryRun ? null : () {
           refreshFiles();
         },

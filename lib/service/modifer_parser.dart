@@ -70,9 +70,8 @@ String modifyName(
 
   int lastMatchindex = 0;
   for (int i = 0; i < parts.length; i++) {
-    String? subword = parts[i];
+    if (parts[i] != null) continue;
     if (orderIndices.isEmpty) break;
-    if (subword != null) continue;
     PathModifierOptions option = config.options[orderIndices[lastMatchindex][1]];
     try {
       parts[i] = evaluateModifier(orderIndices[lastMatchindex][0], option.modifier, index, variables);

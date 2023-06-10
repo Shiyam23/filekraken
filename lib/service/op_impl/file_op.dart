@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/group_config.dart';
@@ -128,112 +129,95 @@ class ExtractOperation extends Operation{
 
 class InsertOperation extends Operation{
 
-  Stream<FileOperationResult> insertFiles({
+  (Map<String, List<String>>, int) getAssignment({
     required List<String> selectedFiles, 
-    required String rootPath,
-    required bool dryRun,
-    required PathModifierConfig pathModifierConfig,
     required GroupConfig groupConfig,
-    required Map<String, Variable> variables
-  }) async*{
-
+    required Map<String, Variable> variables,
+    required PathModifierConfig pathModifierConfig,
+  }) {
     List<GroupOption> nonEmptyGroups = groupConfig.groups
-      .where((group) => group.match != null && group.match != "")
-      .where((group) => group.groupName != null && group.groupName != "")
-      .toList();
-
-    if (nonEmptyGroups.isNotEmpty) {
-      Map<String, List<String>> fileGroups = {
-        for (GroupOption group in nonEmptyGroups) group.groupName!:[] 
-      };
-      for (int i = 0; i < selectedFiles.length; i++) {
-        String selectedFilePath = selectedFiles[i];
+    .where((group) => group.match != null && group.match != "")
+    .where((group) => group.groupName != null && group.groupName != "")
+    .toList();
+    int count = 0;
+    Map<String, List<String>> fileGroups = {
+      for (GroupOption group in nonEmptyGroups) group.groupName!:[] 
+    };
+    if (nonEmptyGroups.isEmpty) {
+      count = selectedFiles.length;
+      selectedFiles.forEachIndexed((index, selectedFilePath) {
+        String fileBasename = basenameWithoutExtension(selectedFilePath);
+        String directoryName = modifyName(fileBasename, index, pathModifierConfig, variables);
+        String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
+        fileGroups.putIfAbsent(newDirectoryPath, () => []).add(selectedFilePath);
+      });
+    } else {
+      for (var selectedFilePath in selectedFiles) {
         String fileBasename = basename(selectedFilePath);
-        if (nonEmptyGroups.isNotEmpty) {
-          for (GroupOption group in nonEmptyGroups) {
-            String groupMatch = group.match!;
-            String groupName = group.groupName!;
-            List<String> matches = parseGroupMatch(groupMatch);
-            for (String match in matches) {
-              if (fileBasename.contains(match)) {
+        for (GroupOption group in nonEmptyGroups) {
+          String groupMatch = group.match!;
+          String groupName = group.groupName!;
+          List<String> matches = parseGroupMatch(groupMatch);
+          for (String match in matches) {
+            if (fileBasename.contains(match)) {
               fileGroups[groupName]!.add(selectedFilePath);
+              count++;
               break;
-              }
-            }
-          }
-        } 
-      }
-      for (String groupName in fileGroups.keys) {
-        if (fileGroups[groupName]!.isEmpty) continue;
-        Directory groupDirectory = Directory(join(rootPath, groupName));
-        for (String filePath in fileGroups[groupName]!) {
-          File file = File(filePath);
-          String target = join(groupDirectory.path, basename(filePath));
-          FileOperationResult result = FileOperationResult(
-            rootPath: rootPath, 
-            fileSource: file.path, 
-            fileTarget: target, 
-            operationType: OperationType.insert, 
-            resultType: ResultType.fail,
-            error: ErrorType.none
-          );
-          if (await File(target).exists()) {
-            yield result.copyWith(error: ErrorType.fileAlreadyExists);
-          }
-          if (rootPath == "") {
-            yield result.copyWith(error: ErrorType.invalidRootPath);
-          }
-          if (dryRun) {
-            yield result.copyWith(resultType: ResultType.dryRun);
-            continue;
-          } else {
-            try {
-              if (!await groupDirectory.exists()) await groupDirectory.create();
-              await file.rename(target);
-              yield result.copyWith(resultType: ResultType.success);
-            } catch (e) {
-              yield Operation.handleError(initialResult: result, error: e);
             }
           }
         }
       }
     }
-    else {
-      for (int i = 0; i < selectedFiles.length; i++) {
-        String selectedFilePath = selectedFiles[i];
-        String fileBasename = basenameWithoutExtension(selectedFilePath);
-        String directoryName = modifyName(fileBasename, i, pathModifierConfig, variables);
-        String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
-        Directory newDirectory = Directory(newDirectoryPath);
-        if (!await newDirectory.exists()) {
-          File selectedFile = File(selectedFilePath);
-          String target = join(newDirectoryPath, basename(selectedFilePath));
-          FileOperationResult result = FileOperationResult(
-            rootPath: rootPath, 
-            fileSource: selectedFile.path, 
-            fileTarget: target, 
-            operationType: OperationType.insert, 
-            resultType: ResultType.fail,
-            error: ErrorType.none
-          );
-          if (await File(target).exists()) {
-            yield result.copyWith(error: ErrorType.fileAlreadyExists);
-          }
-          if (rootPath == "") {
-            yield result.copyWith(error: ErrorType.invalidRootPath);
-          }
-          if (dryRun) {
-            yield result.copyWith(resultType: ResultType.dryRun);
-          } else {
-            try {
-              await newDirectory.create();
-              await selectedFile.rename(target);
-              yield result.copyWith(resultType: ResultType.success);
-            } catch (e) {
-              yield Operation.handleError(initialResult: result, error: e);
-            }
-          }
-        }
+    return (fileGroups, count);
+  }
+
+  Stream<FileOperationResult> insertFiles({
+    required List<String> selectedFiles, 
+    required String rootPath,
+    required bool dryRun,
+    required Map<String, List<String>> assignment,
+    required Map<String, Variable> variables
+  }) async*{
+    for (String groupName in assignment.keys) {
+      if (assignment[groupName]!.isEmpty) continue;
+      Directory groupDirectory = Directory(join(rootPath, groupName));
+      for (String filePath in assignment[groupName]!) {
+        yield await _moveFile(filePath, groupDirectory, rootPath, dryRun);
+      }
+    }
+  }
+
+  Future<FileOperationResult> _moveFile(
+    String filePath, 
+    Directory groupDirectory, 
+    String rootPath, 
+    bool dryRun
+  ) async {
+    File file = File(filePath);
+    String target = join(groupDirectory.path, basename(filePath));
+    FileOperationResult result = FileOperationResult(
+      rootPath: rootPath, 
+      fileSource: file.path, 
+      fileTarget: target, 
+      operationType: OperationType.insert, 
+      resultType: ResultType.fail,
+      error: ErrorType.none
+    );
+    if (await File(target).exists()) {
+      return result.copyWith(error: ErrorType.fileAlreadyExists);
+    }
+    if (rootPath == "") {
+      return result.copyWith(error: ErrorType.invalidRootPath);
+    }
+    if (dryRun) {
+      return result.copyWith(resultType: ResultType.dryRun);
+    } else {
+      try {
+        if (!await groupDirectory.exists()) await groupDirectory.create();
+        await file.rename(target);
+        return result.copyWith(resultType: ResultType.success);
+      } catch (e) {
+        return Operation.handleError(initialResult: result, error: e);
       }
     }
   }
