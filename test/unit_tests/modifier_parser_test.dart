@@ -26,6 +26,46 @@ void main() {
       expect(result, "ehllo");
     });
 
+    test('Strip characters with index range', () {
+      String match = "hello";
+      String modifier = "[2-5]";
+      int index = 0;
+      String result = evaluateModifier(match, modifier, index, variables);
+      expect(result, "ello");
+    });
+
+    test('Strip characters with missing end index', () {
+      String match = "hello";
+      String modifier = "[3-]";
+      int index = 0;
+      String result = evaluateModifier(match, modifier, index, variables);
+      expect(result, "llo");
+    });
+
+    test('Fail on index range greater than string length', () {
+      String match = "hello";
+      String modifier = "[2-7]";
+      int index = 0;
+      evaluateFn() => evaluateModifier(match, modifier, index, variables);
+      expect(evaluateFn, throwsA(isA<RangeError>()));
+    });
+
+    test('Fail on index range lower than 1', () {
+      String match = "hello";
+      String modifier = "[0-4]";
+      int index = 0;
+      evaluateFn() => evaluateModifier(match, modifier, index, variables);
+      expect(evaluateFn, throwsA(isA<ArgumentError>()));
+    });
+
+    test('Fail on start index greater than end index', () {
+      String match = "hello";
+      String modifier = "[3-1]";
+      int index = 0;
+      evaluateFn() => evaluateModifier(match, modifier, index, variables);
+      expect(evaluateFn, throwsA(isA<ArgumentError>()));
+    });
+
     test('Delete match', () {
       String match = "hello";
       String modifier = "[d]";
@@ -305,6 +345,32 @@ void main() {
       String origin = "one-two-three";
       String result = modifyName(origin, index, config, variables);
       expect(result, "3-2-1");
+    });
+  });
+
+  group("Identifier syntax", () {
+    test("No brackets", () {
+      String identifierName = "tsa";
+      String? result = checkIdentifierSyntax(identifierName);
+      expect(result, null);
+    });
+
+    test("Returns an error message on argument containing opening bracket ", () {
+      String identifierName = "[sa";
+      String? result = checkIdentifierSyntax(identifierName);
+      expect(result, isNotNull);
+    });
+
+    test("Returns an error message on argument containing closing bracket ", () {
+      String identifierName = "sa]";
+      String? result = checkIdentifierSyntax(identifierName);
+      expect(result, isNotNull);
+    });
+
+    test("Returns an error message on argument containing both opening and closing bracket ", () {
+      String identifierName = "s[a]";
+      String? result = checkIdentifierSyntax(identifierName);
+      expect(result, isNotNull);
     });
   });
 }
