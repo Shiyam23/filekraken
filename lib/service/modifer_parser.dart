@@ -35,7 +35,7 @@ final noBrackets = anyOf("[]$forbiddenCharacters").neg();
 final identifier = anyOf("[]$forbiddenCharacters").neg();
 final escapedPar = (char('\\') & anyOf("[]"));
 //final deleteVariable = string("[d]").end().map((value) => "");
-final identifierSyntax = (char("[") & identifier.plus() & char("]")).end();
+//final identifierSyntax = (char("[") & identifier.plus() & char("]")).end();
 
 String modifyName(
   String origin, 
