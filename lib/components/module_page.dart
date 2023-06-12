@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/components/unit.dart';
 import 'package:filekraken/layout.dart';
@@ -9,7 +10,7 @@ import 'package:filekraken/service/textfield_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import '../service/group_config.dart';
 import '../service/modifer_parser.dart';
 
@@ -362,12 +363,12 @@ class _FilterByNameSubUnitState extends ConsumerState<FilterByNameSubUnit> {
 
   List<String> filterByName(List<String> fileEntities, bool showOnlyBasename) {
     return fileEntities
-    .map((e) => showOnlyBasename ? basename(e) : e)
+    .map((e) => showOnlyBasename ? path.basename(e) : e)
     .where((element) {
       return switch (stringMatchMode) {
-        StringMatchMode.contains => basename(element).contains(_controller.text),
-        StringMatchMode.prefix => basename(element).startsWith(_controller.text),
-        StringMatchMode.suffix => basename(element).endsWith(_controller.text),
+        StringMatchMode.contains => path.basename(element).contains(_controller.text),
+        StringMatchMode.prefix => path.basename(element).startsWith(_controller.text),
+        StringMatchMode.suffix => path.basename(element).endsWith(_controller.text),
       };
     })
     .toList();
@@ -403,8 +404,13 @@ class FilterBySelection extends ConsumerStatefulWidget {
 
 class _FilterBySelectionState extends ConsumerState<FilterBySelection> {
   
-  Map<String, bool> directorySelection = {};
+  List<(String, ValueNotifier<bool>)> directorySelection = [];
   int selectedDirectories = 0;
+  final FocusNode _focusNode = FocusNode(
+    skipTraversal: true
+  );
+  bool holdingShift = false;
+  int lastToggledCheckbox = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -421,36 +427,69 @@ class _FilterBySelectionState extends ConsumerState<FilterBySelection> {
       return const Text("Waiting for directory input");
     }
     else if (state is FileEntityLoadedState) {
-      for (String path in state.fileEntities) {
-        directorySelection[path] = false;
-      }
-      return ListView(
-        shrinkWrap: true,
-        physics: const ClampingScrollPhysics(),
-        children: state.fileEntities.map((e) => ListTile(
-          leading: StatefulBuilder(
-            builder: (context, checkBoXSetState) {
-              return Checkbox(
-                value: directorySelection[e],
-                onChanged: (value) {
-                  checkBoXSetState(() => directorySelection[e] = value!);
-                  widget.onEntitySelect(
-                    directorySelection.keys
-                    .where((element) => directorySelection[element] == true)
-                    .toList()
-                  );
-                  selectedDirectories += value! ? 1 : -1;
-                },
-              );
+      directorySelection = [
+        for (String path in state.fileEntities)
+        (path, ValueNotifier(false))
+      ];
+      return RawKeyboardListener(
+          focusNode: _focusNode,
+          onKey: (event) {
+            if (event.logicalKey == LogicalKeyboardKey.shiftLeft) {
+      holdingShift = event is RawKeyDownEvent;
             }
-          ),
-          title: Text(basename(e)),
+          },
+          child: ListView(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            children: directorySelection.mapIndexed((i,e) => ValueListenableBuilder(
+      valueListenable: directorySelection[i].$2,
+      child: Text(path.basename(e.$1)),
+      builder: (context, value, child) {
+        return CheckboxListTile(
+          controlAffinity: ListTileControlAffinity.leading,
+          title: child,
+          selected: value,
           visualDensity: VisualDensity.compact,
-        )).toList(),
-      );
+          value: value,
+          onChanged: (value) => onChanged(value, i),
+        );
+      }
+            )).toList(),
+          ),
+        );
     } else {
       return const Text("Something went wrong!");
     }
+  }
+
+  void _togglePreviousCheckbox(int index, bool value) {
+    if (index == lastToggledCheckbox) return;
+    bool upwards = lastToggledCheckbox > index;
+    int start = upwards ? lastToggledCheckbox : index;
+    int upperBound = upwards ? index : lastToggledCheckbox;
+    for (int i = start -1; i > upperBound; i--) {
+      directorySelection[i].$2.value = value;
+    }
+  }
+
+  void onChanged(bool? value, int i) {
+    _focusNode.requestFocus();
+    directorySelection[i].$2.value = value!;
+    selectedDirectories += value ? 1 : -1;
+    if (holdingShift) {
+      _togglePreviousCheckbox(i, value);
+    }
+    lastToggledCheckbox = i;
+    widget.onEntitySelect([
+      for (var (path, notifier) in directorySelection)
+      if (notifier.value) path
+    ]);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 }
 
@@ -483,7 +522,7 @@ class FilterNone extends ConsumerWidget {
             vertical: 2.0
           ),
           child: SelectableText(
-            basename(e),
+            path.basename(e),
             style: const TextStyle(
               fontSize: 17
             ),
