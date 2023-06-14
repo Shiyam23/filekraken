@@ -4,7 +4,6 @@ import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/file_read_op.dart';
 import 'package:filekraken/service/op_impl/file_op.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:filekraken/components/module_page.dart';
 import 'package:flutter/material.dart';
@@ -67,12 +66,16 @@ class _InsertPageState extends ConsumerState<InsertPage> {
               alignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => insert(dryRun: false), 
+                  onPressed: () => insert(dryRun: false, shouldLog: false), 
                   child: const Text("Insert!")
                 ),
                 ElevatedButton(
-                  onPressed: () => insert(dryRun: true), 
+                  onPressed: () => insert(dryRun: true, shouldLog: false), 
                   child: const Text("Dryrun!")
+                ),
+                ElevatedButton(
+                  onPressed: () => insert(dryRun: true, shouldLog: true), 
+                  child: const Text("Debug Log!")
                 ),
               ],
             ),
@@ -98,7 +101,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     _selectedFiles = selectedFiles;
   }
 
-  void insert({required bool dryRun}) async {
+  void insert({required bool dryRun, required bool shouldLog}) async {
     String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
     if (!_formKey.currentState!.validate()) {
@@ -113,7 +116,9 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       selectedFiles: _selectedFiles!,
       groupConfig: groupConfig,
       variables: variables,
-      pathModifierConfig: pathModifierConfig
+      pathModifierConfig: pathModifierConfig,
+      rootPath: rootPath,
+      shouldLog: shouldLog
     );
     Stream<FileOperationResult> results = operation.insertFiles(
         selectedFiles: _selectedFiles!,

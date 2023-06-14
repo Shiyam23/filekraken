@@ -48,12 +48,16 @@ class _CreatePageState extends ConsumerState<CreatePage> {
               alignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => create(dryRun: false), 
+                  onPressed: () => create(dryRun: false, shouldLog: false), 
                   child: const Text("Create!")
                 ),
                 ElevatedButton(
-                  onPressed: () => create(dryRun: true), 
+                  onPressed: () => create(dryRun: true, shouldLog: false), 
                   child: const Text("DryRun!")
+                ),
+                ElevatedButton(
+                  onPressed: () => create(dryRun: true, shouldLog: true), 
+                  child: const Text("Debug Log!")
                 ),
               ],
             ),
@@ -67,7 +71,7 @@ class _CreatePageState extends ConsumerState<CreatePage> {
     ref.read(rootDirectoryProvider.notifier).state = rootPath;
   }
 
-  void create({required bool dryRun}) async {
+  void create({required bool dryRun, required bool shouldLog}) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -84,7 +88,8 @@ class _CreatePageState extends ConsumerState<CreatePage> {
       config: config,
       rootPath: rootPath,
       dryRun: dryRun,
-      variables: variables
+      variables: variables,
+      shouldLog: shouldLog
     );
     await showDialog(
       barrierDismissible: false,

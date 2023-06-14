@@ -60,12 +60,16 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
               alignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => moveFiles(dryRun: false), 
+                  onPressed: () => moveFiles(dryRun: false, shouldLog: false), 
                   child: const Text("Move!")
                 ),
                 ElevatedButton(
-                  onPressed: () => moveFiles(dryRun: true), 
+                  onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
                   child: const Text("DryRun!")
+                ),
+                ElevatedButton(
+                  onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
+                  child: const Text("Debug Log!")
                 ),
               ],
             ),
@@ -116,7 +120,7 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
     _selectedFiles = selectedFiles;
   }
 
-  void moveFiles({required bool dryRun}) async {
+  void moveFiles({required bool dryRun, required bool shouldLog}) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -126,7 +130,8 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
     Stream<FileOperationResult> results = operation.extractFiles(
       selectedFiles: _selectedFiles, 
       rootPath: rootPath,
-      dryRun: dryRun
+      dryRun: dryRun,
+      shouldLog: shouldLog
     );
     
     await showDialog(

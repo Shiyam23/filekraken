@@ -22,7 +22,7 @@ void main() {
       String match = "hello";
       String modifier = "[2][1][3][4][5]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "ehllo");
     });
 
@@ -30,7 +30,7 @@ void main() {
       String match = "hello";
       String modifier = "[2-5]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "ello");
     });
 
@@ -38,7 +38,7 @@ void main() {
       String match = "hello";
       String modifier = "[3-]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "llo");
     });
 
@@ -46,7 +46,7 @@ void main() {
       String match = "hello";
       String modifier = "[2-7]";
       int index = 0;
-      evaluateFn() => evaluateModifier(match, modifier, index, variables);
+      evaluateFn() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateFn, throwsA(isA<RangeError>()));
     });
 
@@ -54,23 +54,27 @@ void main() {
       String match = "hello";
       String modifier = "[0-4]";
       int index = 0;
-      evaluateFn() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateFn, throwsA(isA<ArgumentError>()));
+      evaluateFn() => evaluateModifier(match, modifier, index, variables, null);
+      expect(evaluateFn, throwsA(predicate<InvalidIdentifierException>((e) {
+        return e.type == IdentifierErrorType.negativeOrZeroIndex; 
+      })));
     });
 
     test('Fail on start index greater than end index', () {
       String match = "hello";
       String modifier = "[3-1]";
       int index = 0;
-      evaluateFn() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateFn, throwsA(isA<ArgumentError>()));
+      evaluateFn() => evaluateModifier(match, modifier, index, variables, null);
+      expect(evaluateFn, throwsA(predicate<InvalidIdentifierException>((e) {
+        return e.type == IdentifierErrorType.startIndexGreaterThanEndIndex; 
+      })));
     });
 
     test('Delete match', () {
       String match = "hello";
       String modifier = "[d]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "");
     });
 
@@ -78,7 +82,7 @@ void main() {
       String match = "hello";
       String modifier = "test";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "test");
     });
 
@@ -86,7 +90,7 @@ void main() {
       String match = "hello";
       String modifier = "he[s]lo";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "hedlo");
     });
 
@@ -94,7 +98,7 @@ void main() {
       String match = "hello";
       String modifier = "he\\[slo";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "he\\[slo");
     });
 
@@ -102,7 +106,7 @@ void main() {
       String match = "hello";
       String modifier = "he\\[lo[s]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "he\\[lod");
     });
 
@@ -110,7 +114,7 @@ void main() {
       String match = "hello";
       String modifier = "[1][2][10]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<RangeError>()));
     });
 
@@ -118,47 +122,49 @@ void main() {
       String match = "hello";
       String modifier = "[-1][2][3]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateF, throwsA(isA<ArgumentError>()));
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
+      expect(evaluateF, throwsA(predicate<InvalidIdentifierException>((e) {
+        return e.type == IdentifierErrorType.charIndexNotPositive; 
+      })));
     });
 
     test('Fails on missing closing brackets', () {
       String match = "hello";
       String modifier = "[[test]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
 
     test('Fails on missing opening brackets', () {
       String match = "hello";
-      String modifier = "[test]]";
+      String modifier = "[i]]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
 
     test('Fails on escape bracket with closing bracket', () {
       String match = "hello";
-      String modifier = "\\[test]";
+      String modifier = "\\[i]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
 
     test('Fails on escape bracket with opening bracket', () {
       String match = "hello";
-      String modifier = "[test\\]";
+      String modifier = "[i\\]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateF, throwsA(isA<ArgumentError>()));
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
+      expect(evaluateF, throwsA(predicate<ArgumentError>((e) => e.message == "Invalid modifier")));
     });
 
     test('Fails on recursive brackets', () {
       String match = "hello";
       String modifier = "[[test]]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
 
@@ -166,7 +172,7 @@ void main() {
       String match = "hello";
       String modifier = "hell[]";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
       expect(evaluateF, throwsA(isA<ArgumentError>()));
     });
     
@@ -174,7 +180,7 @@ void main() {
       String match = "hello";
       String modifier = "[d]test";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect("test", result);
     });
 
@@ -182,15 +188,17 @@ void main() {
       String match = "hello";
       String modifier = "he[l]lo";
       int index = 0;
-      evaluateF() => evaluateModifier(match, modifier, index, variables);
-      expect(evaluateF, throwsA(isA<ArgumentError>()));
+      evaluateF() => evaluateModifier(match, modifier, index, variables, null);
+      expect(evaluateF, throwsA(predicate<InvalidIdentifierException>((e) {
+        return e.type == IdentifierErrorType.noMatchingType; 
+      })));
     });
 
     test('Evaluate index', () {
       String match = "hello";
       String modifier = "hello[i]";
       int index = 0;
-      String result = evaluateModifier(match, modifier, index, variables);
+      String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "hello1");
     });
   });
@@ -219,7 +227,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "1-2-3");
     });
 
@@ -245,7 +253,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "1-2-3");
     });
 
@@ -268,7 +276,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "three-two-one");
     });
 
@@ -291,7 +299,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "three-two-one");
     });
 
@@ -317,7 +325,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "3-2-1");
     });
 
@@ -343,7 +351,7 @@ void main() {
         ],
       );
       String origin = "one-two-three";
-      String result = modifyName(origin, index, config, variables);
+      String result = modifyName(origin, index, config, variables, null);
       expect(result, "3-2-1");
     });
   });

@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/group_config.dart';
+import 'package:filekraken/service/logger/logger.dart';
 import 'package:filekraken/service/modifer_parser.dart';
 import 'package:path/path.dart' as path;
 import 'package:filekraken/model/file_result.dart';
@@ -13,15 +14,20 @@ import 'package:path/path.dart';
 Provider<Map<OperationType, Operation>> operationProvider = Provider(
   (ref) {
     return {
-      OperationType.extract: ExtractOperation(),
-      OperationType.insert: InsertOperation(),
-      OperationType.create: CreateOperation(),
-      OperationType.rename: RenameOperation(),
+      OperationType.extract: ExtractOperation(ref: ref),
+      OperationType.insert: InsertOperation(ref: ref),
+      OperationType.create: CreateOperation(ref: ref),
+      OperationType.rename: RenameOperation(ref: ref),
     };
   }
 );
 
 abstract class Operation {
+
+  Operation({required this.ref});
+
+  late final LoggerBase? logger = ref.read(loggerProvider);
+  final ProviderRef ref;
 
   void revert(ModuleOperationResult moduleResult) {
     for (FileOperationResult fileResult in moduleResult.fileResults) {
@@ -74,18 +80,25 @@ abstract class Operation {
 
 
 class ExtractOperation extends Operation{
+  
+  ExtractOperation({required super.ref});
 
   Stream<FileOperationResult> extractFiles({
   required List<String> selectedFiles, 
   required String rootPath,
   required bool dryRun,
+  bool shouldLog = false
   }) async* {
     if (selectedFiles.isEmpty) {
       throw ArgumentError.value(selectedFiles, "selectedFiles", "Must not be empty");
     }
-    for (String filePath in selectedFiles) {
+    LoggerBase? logger = shouldLog ? super.logger : null;
+    logger?.logHeader("Extract operation started", rootPath, selectedFiles.length);
+    for (int i = 0; i < selectedFiles.length; i++) {
+      String filePath = selectedFiles[i];
       File selectedFile = File(filePath);
       String targetPath = path.join(rootPath, path.basename(filePath));
+      String relativePath = filePath.replaceFirst(rootPath, "");
       FileOperationResult result = FileOperationResult(
         rootPath: rootPath,
         fileSource: selectedFile.path, 
@@ -94,6 +107,8 @@ class ExtractOperation extends Operation{
         resultType: ResultType.fail,
         error: ErrorType.none
       );
+      logger?.logLine("Extracting '$relativePath'");
+      i == selectedFiles.length -1 ? logger?.end() : logger?.nextSection();
       if (rootPath == "") {
         yield result.copyWith(error: ErrorType.invalidRootPath);
         continue;
@@ -113,6 +128,7 @@ class ExtractOperation extends Operation{
         yield Operation.handleError(initialResult: result, error: e);
       }
     }
+    logger?.printLog();
   }
 
   @override
@@ -128,13 +144,19 @@ class ExtractOperation extends Operation{
 }
 
 class InsertOperation extends Operation{
+  
+  InsertOperation({required super.ref});
 
   (Map<String, List<String>>, int) getAssignment({
     required List<String> selectedFiles, 
     required GroupConfig groupConfig,
     required Map<String, Variable> variables,
     required PathModifierConfig pathModifierConfig,
+    required String rootPath,
+    bool shouldLog = false
   }) {
+    LoggerBase? logger = shouldLog ? super.logger : null;
+    logger?.logHeader("Insert operation started", rootPath, selectedFiles.length);
     List<GroupOption> nonEmptyGroups = groupConfig.groups
     .where((group) => group.match != null && group.match != "")
     .where((group) => group.groupName != null && group.groupName != "")
@@ -147,27 +169,35 @@ class InsertOperation extends Operation{
       count = selectedFiles.length;
       selectedFiles.forEachIndexed((index, selectedFilePath) {
         String fileBasename = basenameWithoutExtension(selectedFilePath);
-        String directoryName = modifyName(fileBasename, index, pathModifierConfig, variables);
+        logger?.logLine("Inserting file '${path.basename(selectedFilePath)}'");
+        String directoryName = modifyName(fileBasename, index, pathModifierConfig, variables, logger);
+        logger?.logLine("Inserting into directory: '$directoryName'");
         String newDirectoryPath = join(dirname(selectedFilePath), directoryName);
         fileGroups.putIfAbsent(newDirectoryPath, () => []).add(selectedFilePath);
+        index == selectedFiles.length - 1 ? logger?.end() : logger?.nextSection();
       });
     } else {
-      for (var selectedFilePath in selectedFiles) {
+      selectedFiles.forEachIndexed((index, selectedFilePath)  {
         String fileBasename = basename(selectedFilePath);
+        logger?.logLine("Inserting file '${path.basename(selectedFilePath)}'");
         for (GroupOption group in nonEmptyGroups) {
           String groupMatch = group.match!;
           String groupName = group.groupName!;
           List<String> matches = parseGroupMatch(groupMatch);
           for (String match in matches) {
             if (fileBasename.contains(match)) {
+              logger?.logLine("Match found: '$match'");
+              logger?.logLine("Inserting into directory: '$groupName'");
               fileGroups[groupName]!.add(selectedFilePath);
               count++;
               break;
             }
           }
         }
-      }
+        index == selectedFiles.length - 1 ? logger?.end() : logger?.nextSection();
+      });
     }
+    logger?.printLog();
     return (fileGroups, count);
   }
 
@@ -176,7 +206,7 @@ class InsertOperation extends Operation{
     required String rootPath,
     required bool dryRun,
     required Map<String, List<String>> assignment,
-    required Map<String, Variable> variables
+    required Map<String, Variable> variables,
   }) async*{
     for (String groupName in assignment.keys) {
       if (assignment[groupName]!.isEmpty) continue;
@@ -238,20 +268,25 @@ class InsertOperation extends Operation{
 
 class CreateOperation extends Operation{
 
+  CreateOperation({required super.ref});
   Stream<FileOperationResult> createFiles({
     required FileContent fileContent, 
     required NameGeneratorConfig config,
     required String rootPath,
     required bool dryRun,
-    required Map<String, Variable> variables
+    required Map<String, Variable> variables,
+    bool shouldLog = false
   }) async*{
     ContentMode mode = fileContent.mode;
+    LoggerBase? logger = shouldLog ? super.logger : null;
+    logger?.logHeader("Create operation started", rootPath, config.numberFiles);
     for (int i = 0; i < config.numberFiles; i++) {
       String generatedName = applyVariables(
         content: config.nameGenerator, 
         index: i, 
         variables: variables
       );
+      logger?.logLine("Generated name: '$generatedName'");
       switch (mode) {
         case ContentMode.text: {
           if (fileContent.textContent == null) {
@@ -274,6 +309,8 @@ class CreateOperation extends Operation{
             resultType: ResultType.fail,
             error: ErrorType.none
           );
+          logger?.logLine("Creating file '$generatedName.txt'");
+          i == config.numberFiles - 1 ? logger?.end() : logger?.nextSection();
           if (await newFile.exists()) {
             yield result.copyWith(error: ErrorType.fileAlreadyExists);
             continue;
@@ -308,6 +345,8 @@ class CreateOperation extends Operation{
             resultType: ResultType.fail,
             error: ErrorType.none
           );
+          logger?.logLine("Creating file '$generatedName.$fileExtension'");
+          i == config.numberFiles - 1 ? logger?.end() : logger?.nextSection();
           if (await newFile.exists()) {
             yield result.copyWith(error: ErrorType.fileAlreadyExists);
             continue;
@@ -326,6 +365,8 @@ class CreateOperation extends Operation{
           break;
         }
       }
+      logger?.end();
+      logger?.printLog();
     }
   }
 
@@ -340,18 +381,25 @@ class CreateOperation extends Operation{
 
 class RenameOperation extends Operation{
 
+  RenameOperation({required super.ref});
+
   Stream<FileOperationResult> renameFiles({
     required List<String> selectedFiles,
     required Map<String, Variable> variables,
     required PathModifierConfig config,
     required String rootPath,
-    required bool dryRun
+    required bool dryRun,
+    bool shouldLog = false
   }) async* {
+    LoggerBase? logger = shouldLog ? super.logger : null;
+    logger?.logHeader("Rename operation started", rootPath, selectedFiles.length);
     for (int i = 0; i < selectedFiles.length; i++) {
-      String selectedFilePath = selectedFiles[i];
+      String selectedFilePath = selectedFiles[i].trim();
       String fileBasename = basenameWithoutExtension(selectedFilePath);
+      logger?.logLine("Renaming ${basename(selectedFilePath)}");
       String fileExtension = extension(selectedFilePath);
-      String newFileName = modifyName(fileBasename, i, config, variables);
+      String newFileName = modifyName(fileBasename, i, config, variables, logger);
+      logger?.logLine("Renaming to '${newFileName+fileExtension}'");
       String newFilePath = join(dirname(selectedFilePath), newFileName+fileExtension);
       File oldFile = File(selectedFilePath);
       FileOperationResult result = FileOperationResult(
@@ -362,6 +410,7 @@ class RenameOperation extends Operation{
         rootPath: rootPath,
         error: ErrorType.none
       );
+      if (i < selectedFiles.length - 1) logger?.nextSection();
       if (!await oldFile.exists()) {
         yield result.copyWith(error: ErrorType.fileNotFound);
         continue;
@@ -381,6 +430,8 @@ class RenameOperation extends Operation{
         yield Operation.handleError(initialResult: result, error: e);
       }
     }
+    logger?.end();
+    logger?.printLog();
   }
 
   @override

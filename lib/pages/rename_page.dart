@@ -59,12 +59,16 @@ class _RenamePageState extends ConsumerState<RenamePage> {
               alignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => rename(dryRun: false), 
+                  onPressed: () => rename(dryRun: false, shouldLog: false), 
                   child: const Text("Rename!")
                 ),
                 ElevatedButton(
-                  onPressed: () => rename(dryRun: true), 
+                  onPressed: () => rename(dryRun: true, shouldLog: false), 
                   child: const Text("DryRun!")
+                ),
+                ElevatedButton(
+                  onPressed: () => rename(dryRun: true, shouldLog: true), 
+                  child: const Text("Debug Log!")
                 ),
               ],
             ),
@@ -90,7 +94,7 @@ class _RenamePageState extends ConsumerState<RenamePage> {
     _selectedFiles = selectedFiles;
   }
 
-  void rename({required bool dryRun}) async {
+  void rename({required bool dryRun, required bool shouldLog}) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -107,7 +111,8 @@ class _RenamePageState extends ConsumerState<RenamePage> {
       variables: variables,
       config: config,
       rootPath: rootPath,
-      dryRun: dryRun
+      dryRun: dryRun,
+      shouldLog: shouldLog
     );
     showDialog(
       context: context, 
