@@ -225,14 +225,11 @@ class FilterFileEntityUnit extends StatelessWidget {
   }
 }
 
-enum FilterMode with FilterModeString{
+enum FilterMode implements Translatable{
   none,
   bySelection,
-  byName
-}
+  byName;
 
-mixin FilterModeString on Enum implements Translatable{
-  
   @override
   String toTranslatedString(BuildContext context) {
     switch (this) {
@@ -534,23 +531,42 @@ class FilterNone extends ConsumerWidget {
     }
   }
 }
-
-class NameModifierUnit extends StatefulWidget {
+class NameModifierUnit extends StatelessWidget {
 
   const NameModifierUnit({
     required this.title,
-    required this.config, 
+    required this.config,
     super.key
   });
 
   final String title;
   final PathModifierConfig config;
-
+  
   @override
-  State<NameModifierUnit> createState() => _NameModifierUnitState();
+  Widget build(BuildContext context) {
+    return Unit(
+      title: title,
+      content: NameModifierSubUnit(
+        config: config,
+      ),
+    );
+  }
 }
 
-class _NameModifierUnitState extends State<NameModifierUnit> {
+class NameModifierSubUnit extends StatefulWidget {
+
+  const NameModifierSubUnit({
+    required this.config, 
+    super.key
+  });
+
+  final PathModifierConfig config;
+
+  @override
+  State<NameModifierSubUnit> createState() => _NameModifierSubUnitState();
+}
+
+class _NameModifierSubUnitState extends State<NameModifierSubUnit> {
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
@@ -558,40 +574,37 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
 
   @override
   Widget build(BuildContext context) {
-    return Unit(
-      title: widget.title, 
-      content: Column(
-        children: [
-          Row(
-            children: [
-              const Text("Regular Expression"),
-              StatefulBuilder(
-                builder: (BuildContext context, setState) {
-                  return Checkbox(
-                    value: widget.config.isRegex,
-                    onChanged: (value) {
-                      setState(() => widget.config.isRegex = value!);
-                    }
-                  );
-                },
-              ),
-            ],
-          ),
-          AnimatedList(
-            key: _listKey,
-            shrinkWrap: true,
-            initialItemCount: count,
-            itemBuilder: (context, index, animation) => SizeTransition(
-              sizeFactor: animation,
-              child: getRow(index, false)
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Text("Regular Expression"),
+            StatefulBuilder(
+              builder: (BuildContext context, setState) {
+                return Checkbox(
+                  value: widget.config.isRegex,
+                  onChanged: (value) {
+                    setState(() => widget.config.isRegex = value!);
+                  }
+                );
+              },
             ),
+          ],
+        ),
+        AnimatedList(
+          key: _listKey,
+          shrinkWrap: true,
+          initialItemCount: count,
+          itemBuilder: (context, index, animation) => SizeTransition(
+            sizeFactor: animation,
+            child: getRow(index, false)
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(onPressed: addRow, child: const Text("Add"))
-          )
-        ],
-      )
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(onPressed: addRow, child: const Text("Add"))
+        )
+      ],
     );
   }
 
@@ -694,22 +707,66 @@ class _NameModifierUnitState extends State<NameModifierUnit> {
   }
 }
 
-class GroupUnit extends StatefulWidget {
-
-  const GroupUnit({
+class DirectoryNameAssignUnit extends StatelessWidget {
+  
+  const DirectoryNameAssignUnit({
+    super.key,
     required this.title,
+    required this.pathModifierConfig,
+    required this.groupConfig,
+    this.onChange,
+    this.initialMode
+  });
+
+  final String title;
+  final PathModifierConfig pathModifierConfig;  
+  final GroupConfig groupConfig;
+  final DirectoryNameAssignmentMode? initialMode;
+  final void Function(DirectoryNameAssignmentMode selectedMode)? onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    return DynamicUnit<DirectoryNameAssignmentMode>(
+      title: title, 
+      onSubunitChange: onChange,
+      initialSubunit: initialMode,
+      subunits: {
+        DirectoryNameAssignmentMode.basic: GroupSubUnit(config: groupConfig),
+        DirectoryNameAssignmentMode.advanced: NameModifierSubUnit(
+          config: pathModifierConfig
+        )
+      }
+    );
+  }
+}
+
+enum DirectoryNameAssignmentMode implements Translatable{
+  basic,
+  advanced;
+
+  @override
+  String toTranslatedString(BuildContext context) {
+    return switch(this) {
+      DirectoryNameAssignmentMode.basic => "Basic",
+      DirectoryNameAssignmentMode.advanced => "Advanced"
+    };
+  }
+}
+
+class GroupSubUnit extends StatefulWidget {
+
+  const GroupSubUnit({
     required this.config, 
     super.key
   });
 
-  final String title;
   final GroupConfig config;
 
   @override
-  State<GroupUnit> createState() => _GroupUnitState();
+  State<GroupSubUnit> createState() => _GroupSubUnitState();
 }
 
-class _GroupUnitState extends State<GroupUnit> {
+class _GroupSubUnitState extends State<GroupSubUnit> {
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
@@ -718,25 +775,22 @@ class _GroupUnitState extends State<GroupUnit> {
 
   @override
   Widget build(BuildContext context) {
-    return Unit(
-      title: widget.title, 
-      content: Column(
-        children: [
-          AnimatedList(
-            key: _listKey,
-            shrinkWrap: true,
-            initialItemCount: count,
-            itemBuilder: (context, index, animation) => SizeTransition(
-              sizeFactor: animation,
-              child: getRow(index, false)
-            ),
+    return Column(
+      children: [
+        AnimatedList(
+          key: _listKey,
+          shrinkWrap: true,
+          initialItemCount: count,
+          itemBuilder: (context, index, animation) => SizeTransition(
+            sizeFactor: animation,
+            child: getRow(index, false)
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(onPressed: addRow, child: const Text("Add"))
-          )
-        ],
-      )
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(onPressed: addRow, child: const Text("Add"))
+        )
+      ],
     );
   }
 
@@ -749,6 +803,7 @@ class _GroupUnitState extends State<GroupUnit> {
         child: TextFormField(
           initialValue: remove ? null : widget.config.groups[index].match,
           onChanged: remove ? null : (value) => widget.config.groups[index].match = value,
+          validator: checkEmptiness,
           decoration: const InputDecoration(
             hintText: "(unmodified)",
             hintStyle: TextStyle(
@@ -765,6 +820,7 @@ class _GroupUnitState extends State<GroupUnit> {
         child: TextFormField(
           initialValue: remove ? null : widget.config.groups[index].groupName,
           onChanged: remove ? null : (value) => widget.config.groups[index].groupName = value,
+          validator: checkEmptiness,
           decoration: const InputDecoration(
             hintText: "(unmodified)",
             hintStyle: TextStyle(
@@ -776,7 +832,7 @@ class _GroupUnitState extends State<GroupUnit> {
       ),
       SizedBox(
         width: 50,
-        child: !remove ? IconButton(
+        child: (!remove && index != 0) ? IconButton(
           onPressed: () => removeRow(index), 
           icon: const Icon(Icons.delete),
         ) : const SizedBox.shrink(),

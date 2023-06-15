@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:collection/collection.dart';
+import 'package:filekraken/components/module_page.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/group_config.dart';
@@ -153,6 +154,7 @@ class InsertOperation extends Operation{
     required Map<String, Variable> variables,
     required PathModifierConfig pathModifierConfig,
     required String rootPath,
+    required DirectoryNameAssignmentMode mode,
     bool shouldLog = false
   }) {
     LoggerBase? logger = shouldLog ? super.logger : null;

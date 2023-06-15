@@ -25,8 +25,9 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     options: [PathModifierOptions(order: 1)]
   );
   GroupConfig groupConfig = GroupConfig(
-    groups: []
+    groups: [GroupOption(match: "", groupName: "")]
   );
+  DirectoryNameAssignmentMode selectedMode = DirectoryNameAssignmentMode.basic;
 
   @override
   void initState() {
@@ -52,13 +53,11 @@ class _InsertPageState extends ConsumerState<InsertPage> {
             initialFilterMode: FilterMode.none,
             onFileSelect: onFileSelect,
           ),
-          GroupUnit(
-            title: "Group by", 
-            config: groupConfig
-          ),
-          NameModifierUnit(
-            title: "Assign directory name",
-            config: pathModifierConfig,
+          DirectoryNameAssignUnit(
+            title: "Assign directory name", 
+            pathModifierConfig: pathModifierConfig, 
+            groupConfig: groupConfig,
+            initialMode: selectedMode,
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -101,6 +100,10 @@ class _InsertPageState extends ConsumerState<InsertPage> {
     _selectedFiles = selectedFiles;
   }
 
+  void onDirectoryNameAssignModeChange(DirectoryNameAssignmentMode selectedMode) {
+    this.selectedMode = selectedMode;
+  }
+
   void insert({required bool dryRun, required bool shouldLog}) async {
     String rootPath = ref.read(rootDirectoryProvider);
     Map<String, Variable> variables = ref.read(variableListProvider);
@@ -118,6 +121,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
       variables: variables,
       pathModifierConfig: pathModifierConfig,
       rootPath: rootPath,
+      mode: selectedMode,
       shouldLog: shouldLog
     );
     Stream<FileOperationResult> results = operation.insertFiles(
