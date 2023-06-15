@@ -167,7 +167,11 @@ class InsertOperation extends Operation{
     Map<String, List<String>> fileGroups = {
       for (GroupOption group in nonEmptyGroups) group.groupName!:[] 
     };
-    if (nonEmptyGroups.isEmpty) {
+    assert(
+      mode == DirectoryNameAssignmentMode.basic && nonEmptyGroups.isNotEmpty || 
+      mode == DirectoryNameAssignmentMode.advanced
+    );
+    if (mode == DirectoryNameAssignmentMode.advanced) {
       count = selectedFiles.length;
       selectedFiles.forEachIndexed((index, selectedFilePath) {
         String fileBasename = basenameWithoutExtension(selectedFilePath);
@@ -178,7 +182,7 @@ class InsertOperation extends Operation{
         fileGroups.putIfAbsent(newDirectoryPath, () => []).add(selectedFilePath);
         index == selectedFiles.length - 1 ? logger?.end() : logger?.nextSection();
       });
-    } else {
+    } else if (mode == DirectoryNameAssignmentMode.advanced) {
       selectedFiles.forEachIndexed((index, selectedFilePath)  {
         String fileBasename = basename(selectedFilePath);
         logger?.logLine("Inserting file '${path.basename(selectedFilePath)}'");
