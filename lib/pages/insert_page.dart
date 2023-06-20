@@ -58,6 +58,7 @@ class _InsertPageState extends ConsumerState<InsertPage> {
             pathModifierConfig: pathModifierConfig, 
             groupConfig: groupConfig,
             initialMode: selectedMode,
+            onChange: (selectedMode) => this.selectedMode = selectedMode,
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
