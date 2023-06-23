@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod/riverpod.dart';
 
 Provider<LoggerBase?> loggerProvider = Provider((_) => LoggerImpl());
@@ -93,15 +91,16 @@ class LoggerImpl implements LoggerBase {
 
   @override
   void printLog() async {
-    String defaultFilePath = (await getApplicationDocumentsDirectory()).path;
+    String exePath = Platform.script.toFilePath();
+    String logDirPath = join(dirname(exePath), "logs");
     String logBasename = "fk_log";
-    File logFile = File(join(defaultFilePath, "$logBasename.txt"));
+    File logFile = File(join(logDirPath, "$logBasename.txt"));
     int i = 1;
     while (await logFile.exists()) {
-      logFile = File(join(defaultFilePath, "$logBasename$i.txt"));
+      logFile = File(join(logDirPath, "$logBasename$i.txt"));
       i++;
     }
-    await logFile.create();
+    await logFile.create(recursive: true);
     String content = logBuffer.toString();
     await logFile.writeAsString(content, flush: true);
   }
@@ -116,35 +115,4 @@ class LoggerImpl implements LoggerBase {
   void nextSection() {
     _logSimpleDivider();
   }
-}
-
-class NoLog implements LoggerBase {
-  @override
-  void clear() {}
-
-  @override
-  void end() {}
-
-  @override
-  void levelDown([int step = 1]) {}
-  
-  @override
-  void levelUp([int step = 1]) {}
-
-  @override
-  void logHeader(String header, String rootPath, int numberFiles) {}
-
-  @override
-  void logLine(String step) {}
-
-  @override
-  void nextSection() {}
-
-  @override
-  void printLog() {}
-}
-
-enum StepLevel{
-  test;
-  const StepLevel();
 }
