@@ -67,15 +67,15 @@ class _InsertPageState extends ConsumerState<InsertPage> {
               children: [
                 ElevatedButton(
                   onPressed: () => insert(dryRun: false, shouldLog: false), 
-                  child: const Text("Insert!")
+                  child: const Text("Insert")
                 ),
                 ElevatedButton(
                   onPressed: () => insert(dryRun: true, shouldLog: false), 
-                  child: const Text("Dryrun!")
+                  child: const Text("Dryrun")
                 ),
                 ElevatedButton(
                   onPressed: () => insert(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log!")
+                  child: const Text("Debug Log")
                 ),
               ],
             ),

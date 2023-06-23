@@ -60,15 +60,15 @@ class _RenamePageState extends ConsumerState<RenamePage> {
               children: [
                 ElevatedButton(
                   onPressed: () => rename(dryRun: false, shouldLog: false), 
-                  child: const Text("Rename!")
+                  child: const Text("Rename")
                 ),
                 ElevatedButton(
                   onPressed: () => rename(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun!")
+                  child: const Text("DryRun")
                 ),
                 ElevatedButton(
                   onPressed: () => rename(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log!")
+                  child: const Text("Debug Log")
                 ),
               ],
             ),

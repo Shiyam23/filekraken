@@ -61,15 +61,15 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
               children: [
                 ElevatedButton(
                   onPressed: () => moveFiles(dryRun: false, shouldLog: false), 
-                  child: const Text("Move!")
+                  child: const Text("Move")
                 ),
                 ElevatedButton(
                   onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun!")
+                  child: const Text("DryRun")
                 ),
                 ElevatedButton(
                   onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
-                  child: const Text("Debug Log!")
+                  child: const Text("Debug Log")
                 ),
               ],
             ),

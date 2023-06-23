@@ -49,15 +49,15 @@ class _CreatePageState extends ConsumerState<CreatePage> {
               children: [
                 ElevatedButton(
                   onPressed: () => create(dryRun: false, shouldLog: false), 
-                  child: const Text("Create!")
+                  child: const Text("Create")
                 ),
                 ElevatedButton(
                   onPressed: () => create(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun!")
+                  child: const Text("DryRun")
                 ),
                 ElevatedButton(
                   onPressed: () => create(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log!")
+                  child: const Text("Debug Log")
                 ),
               ],
             ),
