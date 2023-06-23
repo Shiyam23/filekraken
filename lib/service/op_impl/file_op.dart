@@ -182,7 +182,7 @@ class InsertOperation extends Operation{
         fileGroups.putIfAbsent(newDirectoryPath, () => []).add(selectedFilePath);
         index == selectedFiles.length - 1 ? logger?.end() : logger?.nextSection();
       });
-    } else if (mode == DirectoryNameAssignmentMode.advanced) {
+    } else if (mode == DirectoryNameAssignmentMode.basic) {
       selectedFiles.forEachIndexed((index, selectedFilePath)  {
         String fileBasename = basename(selectedFilePath);
         logger?.logLine("Inserting file '${path.basename(selectedFilePath)}'");
