@@ -1,8 +1,8 @@
 import 'package:filekraken/components/titlebar/variable_widget.dart';
 import 'package:filekraken/model/list_variable.dart';
 import 'package:filekraken/service/modifer_parser.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:test/test.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -200,6 +200,83 @@ void main() {
       int index = 0;
       String result = evaluateModifier(match, modifier, index, variables, null);
       expect(result, "hello1");
+    });
+
+    test('Apply index variable', () {
+      String content = "hello[i]";
+      int index = 0;
+      String result = applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(result, "hello1");
+    });
+
+    test('Fails on missing closing bracket', () {
+      String content = "hello[i";
+      int index = 0;
+      fn() => applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(fn, throwsArgumentError);
+    });
+
+    test('Fails on missing opening bracket', () {
+      String content = "helloi]";
+      int index = 0;
+      fn() => applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(fn, throwsArgumentError);
+    });
+
+    test('Apply list variable', () {
+      String content = "hello[s]";
+      int index = 0;
+      String result = applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(result, "hellod");
+    });
+
+    test('Apply delete variable', () {
+      String content = "hello[d]";
+      int index = 0;
+      String result = applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(result, "hello");
+    });
+    
+    test('Apply delete variable', () {
+      String content = "hello[d]";
+      int index = 0;
+      String result = applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(result, "hello");
+    });
+    
+    test('Fails on index placeholder', () {
+      String content = "hello[4]";
+      int index = 0;
+      fn() => applyVariables(
+        content: content, 
+        index: index, 
+        variables: variables
+      );
+      expect(fn, throwsAssertionError);
     });
   });
   
