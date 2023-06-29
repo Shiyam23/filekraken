@@ -1,4 +1,4 @@
-import 'package:filekraken/service/database.dart';
+import 'package:filekraken/service/database/database.dart';
 import 'package:filekraken/theme/fk_dark_theme.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';

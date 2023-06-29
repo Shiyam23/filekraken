@@ -167,11 +167,9 @@ class _FolderSelectionUnitState extends ConsumerState<FolderSelectionUnit> {
   }
 
   void _selectDirectory(BuildContext context) async {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory != null) {
-      _controller.text = selectedDirectory;
-      widget.onDirectorySelect(selectedDirectory);
-    }
+    String selectedDirectory = "/root";
+    _controller.text = selectedDirectory;
+    widget.onDirectorySelect(selectedDirectory);
   }
 
   @override

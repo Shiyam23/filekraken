@@ -1,6 +1,5 @@
-import 'dart:io';
 import 'package:filekraken/model/file_result.dart';
-import 'package:filekraken/service/database.dart';
+import 'package:filekraken/service/database/database.dart';
 import 'package:filekraken/service/op_impl/file_op.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,11 +62,12 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
             onEnter: (_) => setState(() => showRevert = true),
             onExit: (_) =>  setState(() => showRevert = false),
             child: ExpansionTile(
+              collapsedBackgroundColor: Colors.black12,
               title: Row(
                 children: [
                   Text(m.operationType.toTranslatedString(context)),
                   const SizedBox(width: 20),
-                  Text(DateFormat.yMd(Platform.localeName).format(m.dateTime)),
+                  Text(DateFormat.yMd().format(m.dateTime)),
                   const SizedBox(width: 20),
                   Text("Success: $success / ${m.fileResults.length}"),
                   const Spacer(),

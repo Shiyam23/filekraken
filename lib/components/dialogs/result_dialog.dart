@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:filekraken/components/dialogs/error_dialogs.dart';
 import 'package:filekraken/model/file_result.dart';
-import 'package:filekraken/service/database.dart';
+import 'package:filekraken/service/database/database.dart';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

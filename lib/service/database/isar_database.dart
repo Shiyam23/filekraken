@@ -5,27 +5,7 @@ import 'package:filekraken/service/isar_dao/isar_file_result.dart';
 import 'package:filekraken/service/isar_dao/isar_list_variable.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:riverpod/riverpod.dart';
-
-Provider<Database> database = Provider((ref) => IsarDatabase());
-
-abstract class Database{
-
-  Future<void> init();
-
-  // ListVariable operations
-  Future<List<ListVariable>> getListVariables();
-  Future<ListVariable> addListVariable(ListVariableData variable);
-  Future<ListVariable> modifyListVariable(ListVariable oldVariable, ListVariableData newVariable);
-  Future<void> deleteListVariable(ListVariable variable);
-  Stream<void> onListVariableChange();
-
-  // History
-  Future<List<ModuleOperationResult>> getModuleOperationResults();
-  Future<ModuleOperationResult> addModuleOperationResult(ModuleOperationResultData data);
-  Future<void> deleteModuleOperationResult(ModuleOperationResult data);
-  
-}
+import 'database.dart';
 
 class IsarDatabase implements Database {
 

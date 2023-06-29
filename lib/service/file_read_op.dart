@@ -19,11 +19,23 @@ class FileListStateNotifier extends StateNotifier<FileEntityState> {
   FileListStateNotifier() : super(const FileEntityWaitingForInput());
 
   void emitFiles(List<String> directoryPaths, int depth) async {
-    state = const FileEntityLoading();
+    List<String> initialFiles = [
+      "/root/rootfile1.txt",
+      "/root/rootfile2.txt",
+      "/root/rootfile3.txt",
+      "/root/rootfile4.txt",
+      "/root/folder1/file1.txt",
+      "/root/folder1/file2.txt",
+      "/root/folder2/file3.txt",
+      "/root/folder2/file4.txt",
+      "/root/folder3/file5.txt",
+    ];
     List<String> files = [];
-    for (String directory in directoryPaths) {
-      List<String> entities = await getFileEntityPath<File>(directory, depth);
-      files.addAll(entities);
+    for (String directoryPath in directoryPaths) {
+      for (String filePath in initialFiles) {
+        if (directoryPath.endsWith("/")) directoryPath = directoryPath.substring(0,directoryPath.length-1);
+        if (path.dirname(filePath) == directoryPath) files.add(filePath);
+      }
     }
     state = FileEntityLoadedState(fileEntities: files, type: FileSystemEntityType.file);
   }
@@ -44,7 +56,11 @@ class DirectoryListStateNotifier extends StateNotifier<FileEntityState> {
     bool shouldRefreshFiles = true
   }) async {
     state = const FileEntityLoading();
-    List<String> fileEntityPaths = await getFileEntityPath<Directory>(rootPath, depth);
+    List<String> fileEntityPaths = [
+      "/root/folder1/",
+      "/root/folder2/",
+      "/root/folder3/",
+    ];
     state = FileEntityLoadedState(fileEntities: fileEntityPaths, type: FileSystemEntityType.directory);
     if (shouldRefreshFiles) {
       ref.read(fileListStateProvider.notifier).emitFiles(fileEntityPaths, 0);

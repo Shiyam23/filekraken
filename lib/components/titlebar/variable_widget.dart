@@ -1,6 +1,6 @@
 import 'package:filekraken/components/module_page.dart';
 import 'package:filekraken/model/list_variable.dart';
-import 'package:filekraken/service/database.dart';
+import 'package:filekraken/service/database/database.dart';
 import 'package:filekraken/service/modifer_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

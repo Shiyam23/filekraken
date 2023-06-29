@@ -31,9 +31,9 @@ abstract class Operation {
   final ProviderRef ref;
 
   void revert(ModuleOperationResult moduleResult) {
-    for (FileOperationResult fileResult in moduleResult.fileResults) {
+    /* for (FileOperationResult fileResult in moduleResult.fileResults) {
       revertSingle(fileResult);
-    }
+    } */
   }
 
   void revertSingle(FileOperationResult fileResult);
@@ -114,16 +114,16 @@ class ExtractOperation extends Operation{
         yield result.copyWith(error: ErrorType.invalidRootPath);
         continue;
       }
-      if (!await selectedFile.exists()) {
+      /* if (!await selectedFile.exists()) {
         yield result.copyWith(error: ErrorType.fileNotFound);
         continue;
-      }
+      } */
       if (dryRun) {
         yield result.copyWith(resultType: ResultType.dryRun);
         continue;
       }
       try {
-        await selectedFile.rename(targetPath);
+        //await selectedFile.rename(targetPath);
         yield result.copyWith(resultType: ResultType.success);
       } catch (e) {
         yield Operation.handleError(initialResult: result, error: e);
@@ -239,9 +239,9 @@ class InsertOperation extends Operation{
       resultType: ResultType.fail,
       error: ErrorType.none
     );
-    if (await File(target).exists()) {
+    /* if (await File(target).exists()) {
       return result.copyWith(error: ErrorType.fileAlreadyExists);
-    }
+    } */
     if (rootPath == "") {
       return result.copyWith(error: ErrorType.invalidRootPath);
     }
@@ -249,8 +249,8 @@ class InsertOperation extends Operation{
       return result.copyWith(resultType: ResultType.dryRun);
     } else {
       try {
-        if (!await groupDirectory.exists()) await groupDirectory.create();
-        await file.rename(target);
+        //if (!await groupDirectory.exists()) await groupDirectory.create();
+        //await file.rename(target);
         return result.copyWith(resultType: ResultType.success);
       } catch (e) {
         return Operation.handleError(initialResult: result, error: e);
@@ -299,14 +299,8 @@ class CreateOperation extends Operation{
             // TODO: Show error dialog
             return;
           }
-          String textContent = fileContent.textContent!;
-          String modifiedContent = applyVariables(
-            content: textContent, 
-            index: i, 
-            variables: variables
-          );
+          
           String target = join(rootPath, "$generatedName.txt");
-          File newFile = File(target);
           FileOperationResult result = FileOperationResult(
             rootPath: rootPath, 
             fileSource: rootPath, 
@@ -317,17 +311,17 @@ class CreateOperation extends Operation{
           );
           logger?.logLine("Creating file '$generatedName.txt'");
           i == config.numberFiles - 1 ? logger?.end() : logger?.nextSection();
-          if (await newFile.exists()) {
+          /* if (await newFile.exists()) {
             yield result.copyWith(error: ErrorType.fileAlreadyExists);
             continue;
-          }
+          } */
           if (dryRun) {
             yield result.copyWith(resultType: ResultType.dryRun);
             continue;
           } 
           try {
-            await newFile.create();
-            await newFile.writeAsString(modifiedContent);
+            /* await newFile.create();
+            await newFile.writeAsString(modifiedContent); */
             yield result.copyWith(resultType: ResultType.success);
           } catch (e) {
             yield Operation.handleError(initialResult: result, error: e);
@@ -339,10 +333,8 @@ class CreateOperation extends Operation{
             // TODO: Show error dialog
             return;
           }
-          List<int> fileData = await File(fileContent.binaryFilePath!).readAsBytes();
           String fileExtension = extension(fileContent.binaryFilePath!);
           String target = join(rootPath, generatedName + fileExtension);
-          File newFile = File(target);
           FileOperationResult result = FileOperationResult(
             rootPath: rootPath, 
             fileSource: rootPath, 
@@ -353,17 +345,17 @@ class CreateOperation extends Operation{
           );
           logger?.logLine("Creating file '$generatedName.$fileExtension'");
           i == config.numberFiles - 1 ? logger?.end() : logger?.nextSection();
-          if (await newFile.exists()) {
+         /*  if (await newFile.exists()) {
             yield result.copyWith(error: ErrorType.fileAlreadyExists);
             continue;
-          }
+          } */
           if (dryRun) {
             yield result.copyWith(resultType: ResultType.dryRun);
             continue;
           } 
           try {
-            await newFile.create();
-            await newFile.writeAsBytes(fileData);
+            /* await newFile.create();
+            await newFile.writeAsBytes(fileData); */
             yield result.copyWith(resultType: ResultType.success);
           } catch (e) {
             yield Operation.handleError(initialResult: result, error: e);
@@ -407,7 +399,6 @@ class RenameOperation extends Operation{
       String newFileName = modifyName(fileBasename, i, config, variables, logger);
       logger?.logLine("Renaming to '${newFileName+fileExtension}'");
       String newFilePath = join(dirname(selectedFilePath), newFileName+fileExtension);
-      File oldFile = File(selectedFilePath);
       FileOperationResult result = FileOperationResult(
         fileSource: selectedFilePath,
         fileTarget: newFilePath,
@@ -417,20 +408,20 @@ class RenameOperation extends Operation{
         error: ErrorType.none
       );
       if (i < selectedFiles.length - 1) logger?.nextSection();
-      if (!await oldFile.exists()) {
+      /* if (!await oldFile.exists()) {
         yield result.copyWith(error: ErrorType.fileNotFound);
         continue;
       }
       if (await File(newFilePath).exists()) {
         yield result.copyWith(error: ErrorType.fileAlreadyExists);
         continue;
-      }
+      } */
       if (dryRun) {
         yield result.copyWith(resultType: ResultType.dryRun);
         continue;
       }
       try {
-        await oldFile.rename(newFilePath);
+        //await oldFile.rename(newFilePath);
         yield result.copyWith(resultType: ResultType.success);
       } catch (e) {
         yield Operation.handleError(initialResult: result, error: e);
