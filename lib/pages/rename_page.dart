@@ -55,7 +55,7 @@ class _RenamePageState extends ConsumerState<RenamePage> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: ButtonBar(
+            child: OverflowBar(
               alignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
