@@ -77,12 +77,12 @@ class TitleBarMenuButton extends ConsumerWidget {
       alignment: Alignment.center,
       child: OutlinedButton(
         style: ButtonStyle(
-          fixedSize: const MaterialStatePropertyAll(Size(100, 40)),
-          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+          fixedSize: const WidgetStatePropertyAll(Size(120, 40)),
+          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5)
           )),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-          backgroundColor: const MaterialStatePropertyAll(Colors.blueGrey)
+          foregroundColor: const WidgetStatePropertyAll(Colors.white),
+          backgroundColor: const WidgetStatePropertyAll(Colors.blueGrey)
         ),
         child: title,
         onPressed: () {
