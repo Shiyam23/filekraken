@@ -50,6 +50,7 @@ class _HistoryWidgetState extends ConsumerState<HistoryWidget> {
   Widget build(BuildContext context) {
     List<ModuleOperationResult> entries = ref.watch(historyProvider);
     return ListView(
+      shrinkWrap: true,
       children: entries
       .map((m) {
       int success = m.fileResults

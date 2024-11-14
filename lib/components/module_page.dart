@@ -3,7 +3,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/components/unit.dart';
 import 'package:filekraken/layout.dart';
 import 'package:filekraken/model/file_content.dart';
-import 'package:filekraken/model/file_result.dart';
 import 'package:filekraken/pages/pages.dart';
 import 'package:filekraken/service/file_read_op.dart';
 import 'package:filekraken/service/textfield_validators.dart';
@@ -30,7 +29,7 @@ class ModulePage extends ConsumerWidget {
         height: MediaQuery.of(context).size.height - titleBarHeight,
         child: Navigator(
           key: ref.watch(navigatorProvider),
-          initialRoute: OperationType.extract.toString(),
+          initialRoute: MainPage.extract.toString(),
           onGenerateRoute: (settings) {
             Widget? module = ref.read(pageProvider)[settings.name!];
             if (module == null) {
@@ -39,7 +38,7 @@ class ModulePage extends ConsumerWidget {
             return PageRouteBuilder(
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, a, aa) => SingleChildScrollView(child: module),
+              pageBuilder: (_, __, ___) => SingleChildScrollView(child: module),
               settings: settings
             );
           },

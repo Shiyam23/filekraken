@@ -5,9 +5,9 @@ import 'package:filekraken/service/modifer_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final variableListProvider = StateNotifierProvider<VariableListNotifier,Map<String,Variable>>(
-  (ref) => VariableListNotifier(ref)..init()
-);
+final variableListProvider =
+    StateNotifierProvider<VariableListNotifier, Map<String, Variable>>(
+        (ref) => VariableListNotifier(ref)..init());
 
 class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
   VariableListNotifier(this.ref) : super(predefinedVariables);
@@ -24,28 +24,32 @@ class VariableListNotifier extends StateNotifier<Map<String, Variable>> {
   }
 
   void addVariable(ListVariableData variable) async {
-    ListVariable newVariable = await ref.read(database).addListVariable(variable);
+    ListVariable newVariable =
+        await ref.read(database).addListVariable(variable);
     state = {...state, newVariable.identifier: newVariable};
   }
 
   void removeVariable(ListVariable variable) async {
     await ref.read(database).deleteListVariable(variable);
     state = {
-      for (MapEntry element in state.entries) 
-      if (element.value != variable) element.key:element.value
+      for (MapEntry element in state.entries)
+        if (element.value != variable) element.key: element.value
     };
   }
 
   void modify(ListVariable oldVariable, ListVariableData newData) async {
-    ListVariable newVariable = await ref.read(database).modifyListVariable(oldVariable, newData);
+    ListVariable newVariable =
+        await ref.read(database).modifyListVariable(oldVariable, newData);
     state = {
-      for (MapEntry element in state.entries) 
-        if (element.value != oldVariable) element.key : element.value
-        else newVariable.identifier : newVariable
+      for (MapEntry element in state.entries)
+        if (element.value != oldVariable)
+          element.key: element.value
+        else
+          newVariable.identifier: newVariable
     };
   }
 
-  void refresh() async{
+  void refresh() async {
     final listVariables = await ref.read(database).getListVariables();
     state = {
       ...predefinedVariables,
@@ -62,7 +66,6 @@ class VariableListWidget extends ConsumerStatefulWidget {
 }
 
 class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,56 +76,48 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    List<Variable> variableList = ref.watch(variableListProvider).values.toList();
-    return Stack(
+    List<Variable> variableList =
+        ref.watch(variableListProvider).values.toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox.expand(
-          child: DataTable(
+        DataTable(
             showCheckboxColumn: false,
             columns: const [
               DataColumn(label: Text("Name")),
               DataColumn(label: Text("Identifier")),
               DataColumn(label: Text("Description")),
               DataColumn(label: Text("")),
-            ], 
+            ],
             rows: variableList.map((e) {
               bool isPredefined = e is IndexVariable || e is DeleteVariable;
               return DataRow(
-              onSelectChanged: isPredefined ? null : (_) => modifyVariable(context, e),
-              cells: [
-                DataCell(
-                  Text(e.name), 
-                  placeholder: isPredefined
-                ),
-                DataCell(
-                  Text("[${e.identifier}]"),
-                  placeholder: isPredefined
-                ),
-                DataCell(
-                  Text(e.getDescription()),
-                  placeholder: isPredefined
-                ),
-                DataCell(
-                  isPredefined ? const SizedBox.shrink() : IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      deleteVariable(e);
-                    },
-                  ),
-                  placeholder: isPredefined
-                ),
-              ]
-            );
-            }).toList()
-          ),
-        ),
+                  onSelectChanged:
+                      isPredefined ? null : (_) => modifyVariable(context, e),
+                  cells: [
+                    DataCell(Text(e.name), placeholder: isPredefined),
+                    DataCell(Text("[${e.identifier}]"),
+                        placeholder: isPredefined),
+                    DataCell(Text(e.getDescription()),
+                        placeholder: isPredefined),
+                    DataCell(
+                        isPredefined
+                            ? const SizedBox.shrink()
+                            : IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  deleteVariable(e);
+                                },
+                              ),
+                        placeholder: isPredefined),
+                  ]);
+            }).toList()),
         Container(
           padding: const EdgeInsets.all(10),
           alignment: Alignment.bottomRight,
           child: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () => addVariable(context)
-          ),
+              child: const Icon(Icons.add),
+              onPressed: () => addVariable(context)),
         )
       ],
     );
@@ -132,17 +127,17 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
     if (e is! ListVariable) {
       throw ArgumentError.value(e, "e", "e is not a ListVariable");
     }
-    ListVariableData? result = await ref.read(navigatorProvider).currentState?.push(
-      DialogRoute(
-        context: context,
-        builder: (context) => ListVariableEdit(
-          initialName: e.name,
-          initialIdentifier: e.identifier,
-          initialContent: e.content,
-          initialLoop: e.loop,
-        )
-      ),
-    );
+    ListVariableData? result =
+        await ref.read(navigatorProvider).currentState?.push(
+              DialogRoute(
+                  context: context,
+                  builder: (context) => ListVariableEdit(
+                        initialName: e.name,
+                        initialIdentifier: e.identifier,
+                        initialContent: e.content,
+                        initialLoop: e.loop,
+                      )),
+            );
     if (result != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.modify(e, result);
@@ -150,12 +145,11 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   }
 
   void addVariable(BuildContext context) async {
-    ListVariableData? newVariable = await ref.read(navigatorProvider).currentState?.push(
-      DialogRoute(
-        context: context, 
-        builder: (_) => const ListVariableEdit()
-      )
-    );
+    ListVariableData? newVariable = await ref
+        .read(navigatorProvider)
+        .currentState
+        ?.push(DialogRoute(
+            context: context, builder: (_) => const ListVariableEdit()));
     if (newVariable != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.addVariable(newVariable);
@@ -170,13 +164,12 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
 }
 
 class ListVariableEdit extends ConsumerStatefulWidget {
-  const ListVariableEdit({
-    this.initialName, 
-    this.initialIdentifier, 
-    this.initialContent, 
-    this.initialLoop,
-    super.key
-  });
+  const ListVariableEdit(
+      {this.initialName,
+      this.initialIdentifier,
+      this.initialContent,
+      this.initialLoop,
+      super.key});
 
   final String? initialName;
   final String? initialIdentifier;
@@ -188,7 +181,6 @@ class ListVariableEdit extends ConsumerStatefulWidget {
 }
 
 class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
@@ -218,17 +210,13 @@ class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
               TextFormField(
                 validator: checkEmpty,
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder()
-                ),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               TextFormField(
                 key: _identifierFieldKey,
                 validator: (value) => checkIdentifier(value),
                 controller: _idController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder()
-                ),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               TextFormField(
                 validator: checkEmpty,
@@ -236,18 +224,13 @@ class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
                 keyboardType: TextInputType.multiline,
                 minLines: 5,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder()
-                ),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
-              StatefulBuilder(
-                builder: (context, setState) {
-                  return Checkbox(
+              StatefulBuilder(builder: (context, setState) {
+                return Checkbox(
                     value: loop,
-                    onChanged: (value) => setState(() => loop = value!)
-                  );
-                }
-              ),
+                    onChanged: (value) => setState(() => loop = value!));
+              }),
               Row(
                 children: [
                   TextButton(
@@ -255,20 +238,19 @@ class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         return Navigator.pop<ListVariableData>(
-                          context,
-                          ListVariableData(
-                            content: _contentController.text.trim().split("\n"),
-                            identifier: _idController.text,
-                            name: _nameController.text,
-                            loop: loop
-                          )
-                        );
+                            context,
+                            ListVariableData(
+                                content:
+                                    _contentController.text.trim().split("\n"),
+                                identifier: _idController.text,
+                                name: _nameController.text,
+                                loop: loop));
                       }
                     },
                   ),
                   TextButton(
                     child: const Text("Cancel"),
-                    onPressed: () => Navigator.pop<ListVariable>(context,null),
+                    onPressed: () => Navigator.pop<ListVariable>(context, null),
                   ),
                 ],
               )
@@ -304,6 +286,8 @@ class _ListVariableEditState extends ConsumerState<ListVariableEdit> {
     }
     bool identifierExists = ref.read(variableListProvider).containsKey(value);
     bool identifierChanged = value != widget.initialIdentifier;
-    return identifierExists && identifierChanged ? "Identifier already exists" : null;
+    return identifierExists && identifierChanged
+        ? "Identifier already exists"
+        : null;
   }
 }

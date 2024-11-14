@@ -56,12 +56,20 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
             icon: Icon(Icons.edit_document),
             label: Text("Rename"),
           ),
+          NavigationRailDestination(
+            icon: Icon(Icons.abc),
+            label: Text("Variables"),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.history),
+            label: Text("History"),
+          ),
         ],
         onDestinationSelected: (value) => setState(() {
           final selectedIndexNotifier = ref.read(navigationRailSelectedIndexProvider.notifier);
           if (value != selectedIndexNotifier.state) {
             ref.read(navigatorProvider).currentState?.pushReplacementNamed(
-              ref.read(pageProvider).keys.toList()[value]     
+              ref.read(pageProvider).keys.toList()[value]
             );
             ref.read(fileListStateProvider.notifier).reset();
             ref.read(directoryListStateProvider.notifier).reset();
