@@ -38,7 +38,7 @@ class ModulePage extends ConsumerWidget {
             return PageRouteBuilder(
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, __, ___) => SingleChildScrollView(child: module),
+              pageBuilder: (_, __, ___) => module,
               settings: settings
             );
           },

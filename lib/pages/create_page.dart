@@ -29,40 +29,42 @@ class _CreatePageState extends ConsumerState<CreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          FolderSelectionUnit(
-            onDirectorySelect: onRootDirectorySelected
-          ),
-          NameGeneratorUnit(
-            config: config,
-          ),
-          FileContentUnit(
-            content: fileContent,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () => create(dryRun: false, shouldLog: false), 
-                  child: const Text("Create")
-                ),
-                ElevatedButton(
-                  onPressed: () => create(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun")
-                ),
-                ElevatedButton(
-                  onPressed: () => create(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log")
-                ),
-              ],
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FolderSelectionUnit(
+              onDirectorySelect: onRootDirectorySelected
             ),
-          )
-        ],
+            NameGeneratorUnit(
+              config: config,
+            ),
+            FileContentUnit(
+              content: fileContent,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => create(dryRun: false, shouldLog: false), 
+                    child: const Text("Create")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => create(dryRun: true, shouldLog: false), 
+                    child: const Text("DryRun")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => create(dryRun: true, shouldLog: true), 
+                    child: const Text("Debug Log")
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

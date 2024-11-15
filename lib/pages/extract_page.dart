@@ -37,43 +37,45 @@ class _ExtractPageState extends ConsumerState<ExtractPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          FolderSelectionUnit(
-            onDirectorySelect: onRootDirectorySelected,
-            depth: _depth,
-          ),
-          FilterDirectoryUnit(
-            initialFilterMode: directoryFilterMode,
-            onDirectorySelect: onDirectorySelect,
-            onFilterModeChange: _onDirFilterModeChange,
-          ),
-          FilterFileUnit(
-            onFileSelect: onFileSelect,
-            initialFilterMode: FilterMode.none,
-          ),
-          Center(
-            child: ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () => moveFiles(dryRun: false, shouldLog: false), 
-                  child: const Text("Move")
-                ),
-                ElevatedButton(
-                  onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun")
-                ),
-                ElevatedButton(
-                  onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
-                  child: const Text("Debug Log")
-                ),
-              ],
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FolderSelectionUnit(
+              onDirectorySelect: onRootDirectorySelected,
+              depth: _depth,
             ),
-          )
-        ],
+            FilterDirectoryUnit(
+              initialFilterMode: directoryFilterMode,
+              onDirectorySelect: onDirectorySelect,
+              onFilterModeChange: _onDirFilterModeChange,
+            ),
+            FilterFileUnit(
+              onFileSelect: onFileSelect,
+              initialFilterMode: FilterMode.none,
+            ),
+            Center(
+              child: ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => moveFiles(dryRun: false, shouldLog: false), 
+                    child: const Text("Move")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
+                    child: const Text("DryRun")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => moveFiles(dryRun: true, shouldLog: false), 
+                    child: const Text("Debug Log")
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

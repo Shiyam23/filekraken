@@ -38,42 +38,44 @@ class _RenamePageState extends ConsumerState<RenamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          FolderSelectionUnit(
-            onDirectorySelect: onRootDirectorySelected
-          ),
-          FilterFileUnit(
-            initialFilterMode: FilterMode.none,
-            onFileSelect: onFileSelect,
-          ),
-          NameModifierUnit(
-            title: "Assign file name",
-            config: config,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: OverflowBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () => rename(dryRun: false, shouldLog: false), 
-                  child: const Text("Rename")
-                ),
-                ElevatedButton(
-                  onPressed: () => rename(dryRun: true, shouldLog: false), 
-                  child: const Text("DryRun")
-                ),
-                ElevatedButton(
-                  onPressed: () => rename(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log")
-                ),
-              ],
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FolderSelectionUnit(
+              onDirectorySelect: onRootDirectorySelected
             ),
-          )
-        ],
+            FilterFileUnit(
+              initialFilterMode: FilterMode.none,
+              onFileSelect: onFileSelect,
+            ),
+            NameModifierUnit(
+              title: "Assign file name",
+              config: config,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: OverflowBar(
+                alignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => rename(dryRun: false, shouldLog: false), 
+                    child: const Text("Rename")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => rename(dryRun: true, shouldLog: false), 
+                    child: const Text("DryRun")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => rename(dryRun: true, shouldLog: true), 
+                    child: const Text("Debug Log")
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

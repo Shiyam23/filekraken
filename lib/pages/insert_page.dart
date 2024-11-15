@@ -42,45 +42,47 @@ class _InsertPageState extends ConsumerState<InsertPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          FolderSelectionUnit(
-            onDirectorySelect: onRootDirectorySelected
-          ),
-          FilterFileUnit(
-            initialFilterMode: FilterMode.none,
-            onFileSelect: onFileSelect,
-          ),
-          DirectoryNameAssignUnit(
-            title: "Assign directory name", 
-            pathModifierConfig: pathModifierConfig, 
-            groupConfig: groupConfig,
-            initialMode: selectedMode,
-            onChange: (selectedMode) => this.selectedMode = selectedMode,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () => insert(dryRun: false, shouldLog: false), 
-                  child: const Text("Insert")
-                ),
-                ElevatedButton(
-                  onPressed: () => insert(dryRun: true, shouldLog: false), 
-                  child: const Text("Dryrun")
-                ),
-                ElevatedButton(
-                  onPressed: () => insert(dryRun: true, shouldLog: true), 
-                  child: const Text("Debug Log")
-                ),
-              ],
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FolderSelectionUnit(
+              onDirectorySelect: onRootDirectorySelected
             ),
-          )
-        ],
+            FilterFileUnit(
+              initialFilterMode: FilterMode.none,
+              onFileSelect: onFileSelect,
+            ),
+            DirectoryNameAssignUnit(
+              title: "Assign directory name", 
+              pathModifierConfig: pathModifierConfig, 
+              groupConfig: groupConfig,
+              initialMode: selectedMode,
+              onChange: (selectedMode) => this.selectedMode = selectedMode,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => insert(dryRun: false, shouldLog: false), 
+                    child: const Text("Insert")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => insert(dryRun: true, shouldLog: false), 
+                    child: const Text("Dryrun")
+                  ),
+                  ElevatedButton(
+                    onPressed: () => insert(dryRun: true, shouldLog: true), 
+                    child: const Text("Debug Log")
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
