@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TitleBar extends StatelessWidget {
-  const TitleBar({super.key, required this.height});
+  const TitleBar({super.key});
 
-  final double height;
   @override
   Widget build(BuildContext context) {
     FKTheme theme = FKThemeWidget.of(context)!.theme;
     return SizedBox(
-      height: height,
       child: WindowTitleBarBox(
         child: ColoredBox(
           color: Colors.white,

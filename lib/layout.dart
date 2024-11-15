@@ -12,16 +12,17 @@ class Layout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titlebarHeight = ref.watch(titlebarHeightProvider);
-    return Column(
+    return const Column(
       children: [
-        TitleBar(height: titlebarHeight),
-        const Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FKNavigationRail(),
-            ModulePage()
-          ],
+        TitleBar(),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FKNavigationRail(),
+              ModulePage()
+            ],
+          ),
         ),
       ],
     );

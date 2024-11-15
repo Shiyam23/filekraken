@@ -22,54 +22,50 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
   @override
   Widget build(BuildContext context) {
     FKTheme theme = FKThemeWidget.of(context)!.theme;
-    final titlebarHeight = ref.watch(titlebarHeightProvider);
-    return SizedBox(
-      height: MediaQuery.of(context).size.height - titlebarHeight,
-      child: NavigationRail(
-        backgroundColor: theme.navBarBackgroundColor,
-        extended: true,
-        selectedLabelTextStyle: theme.navBarSelectedTextStyle,
-        selectedIconTheme: theme.navBarSelectedIconStyle,
-        unselectedLabelTextStyle: theme.navBarUnselectedTextStyle,
-        unselectedIconTheme: theme.navBarUnselectedIconStyle,
-        selectedIndex: ref.watch(navigationRailSelectedIndexProvider),
-        minWidth: 60,
-        minExtendedWidth: 200,
-        destinations: const [
-          NavigationRailDestination(
-            padding: EdgeInsets.all(0),
-            icon: Icon(Icons.drive_folder_upload_rounded),
-            label: Text("Extract"),
-          ),
-          NavigationRailDestination(
-              icon: Icon(Icons.drive_file_move_rounded), label: Text("Insert")),
-          NavigationRailDestination(
-              icon: Icon(Icons.file_copy), label: Text("Create")),
-          NavigationRailDestination(
-            icon: Icon(Icons.edit_document),
-            label: Text("Rename"),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.abc),
-            label: Text("Variables"),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.history),
-            label: Text("History"),
-          ),
-        ],
-        onDestinationSelected: (value) => setState(() {
-          final selectedIndexNotifier =
-              ref.read(navigationRailSelectedIndexProvider.notifier);
-          if (value != selectedIndexNotifier.state) {
-            ref.read(navigatorProvider).currentState?.pushReplacementNamed(
-                ref.read(pageProvider).keys.toList()[value]);
-            ref.read(fileListStateProvider.notifier).reset();
-            ref.read(directoryListStateProvider.notifier).reset();
-            selectedIndexNotifier.state = value;
-          }
-        }),
-      ),
+    return NavigationRail(
+      backgroundColor: theme.navBarBackgroundColor,
+      extended: true,
+      selectedLabelTextStyle: theme.navBarSelectedTextStyle,
+      selectedIconTheme: theme.navBarSelectedIconStyle,
+      unselectedLabelTextStyle: theme.navBarUnselectedTextStyle,
+      unselectedIconTheme: theme.navBarUnselectedIconStyle,
+      selectedIndex: ref.watch(navigationRailSelectedIndexProvider),
+      minWidth: 60,
+      minExtendedWidth: 200,
+      destinations: const [
+        NavigationRailDestination(
+          padding: EdgeInsets.all(0),
+          icon: Icon(Icons.drive_folder_upload_rounded),
+          label: Text("Extract"),
+        ),
+        NavigationRailDestination(
+            icon: Icon(Icons.drive_file_move_rounded), label: Text("Insert")),
+        NavigationRailDestination(
+            icon: Icon(Icons.file_copy), label: Text("Create")),
+        NavigationRailDestination(
+          icon: Icon(Icons.edit_document),
+          label: Text("Rename"),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.abc),
+          label: Text("Variables"),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.history),
+          label: Text("History"),
+        ),
+      ],
+      onDestinationSelected: (value) => setState(() {
+        final selectedIndexNotifier =
+            ref.read(navigationRailSelectedIndexProvider.notifier);
+        if (value != selectedIndexNotifier.state) {
+          ref.read(navigatorProvider).currentState?.pushReplacementNamed(
+              ref.read(pageProvider).keys.toList()[value]);
+          ref.read(fileListStateProvider.notifier).reset();
+          ref.read(directoryListStateProvider.notifier).reset();
+          selectedIndexNotifier.state = value;
+        }
+      }),
     );
   }
 }
