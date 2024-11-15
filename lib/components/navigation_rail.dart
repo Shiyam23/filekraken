@@ -6,12 +6,10 @@ import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-StateProvider<int?> navigationRailSelectedIndexProvider = StateProvider(
-  (ref) => 0
-);
+StateProvider<int?> navigationRailSelectedIndexProvider =
+    StateProvider((ref) => 0);
 
 class FKNavigationRail extends ConsumerStatefulWidget {
-  
   const FKNavigationRail({super.key});
 
   @override
@@ -19,7 +17,6 @@ class FKNavigationRail extends ConsumerStatefulWidget {
 }
 
 class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
-
   bool extended = false;
 
   @override
@@ -30,7 +27,7 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
       height: MediaQuery.of(context).size.height - titlebarHeight,
       child: NavigationRail(
         backgroundColor: theme.navBarBackgroundColor,
-        extended: extended,
+        extended: true,
         selectedLabelTextStyle: theme.navBarSelectedTextStyle,
         selectedIconTheme: theme.navBarSelectedIconStyle,
         unselectedLabelTextStyle: theme.navBarUnselectedTextStyle,
@@ -45,13 +42,9 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
             label: Text("Extract"),
           ),
           NavigationRailDestination(
-            icon: Icon(Icons.drive_file_move_rounded),
-            label: Text("Insert")
-          ),
+              icon: Icon(Icons.drive_file_move_rounded), label: Text("Insert")),
           NavigationRailDestination(
-            icon: Icon(Icons.file_copy),
-            label: Text("Create")
-          ),
+              icon: Icon(Icons.file_copy), label: Text("Create")),
           NavigationRailDestination(
             icon: Icon(Icons.edit_document),
             label: Text("Rename"),
@@ -66,34 +59,16 @@ class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
           ),
         ],
         onDestinationSelected: (value) => setState(() {
-          final selectedIndexNotifier = ref.read(navigationRailSelectedIndexProvider.notifier);
+          final selectedIndexNotifier =
+              ref.read(navigationRailSelectedIndexProvider.notifier);
           if (value != selectedIndexNotifier.state) {
             ref.read(navigatorProvider).currentState?.pushReplacementNamed(
-              ref.read(pageProvider).keys.toList()[value]
-            );
+                ref.read(pageProvider).keys.toList()[value]);
             ref.read(fileListStateProvider.notifier).reset();
             ref.read(directoryListStateProvider.notifier).reset();
             selectedIndexNotifier.state = value;
           }
         }),
-        trailing: Expanded(
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: 
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: IconTheme(
-                  data: theme.navBarUnselectedIconStyle,
-                  child: IconButton(
-                    icon: Icon(extended ? Icons.arrow_back : Icons.arrow_forward),
-                    onPressed: () {
-                      setState(() => extended = !extended);
-                    },
-                  ),
-                ),
-              ),
-          ),
-        ),
       ),
     );
   }
