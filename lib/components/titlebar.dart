@@ -19,6 +19,7 @@ class TitleBar extends StatelessWidget {
             children: [
               MoveWindow(
                 child: Container(
+                  color: const Color(0xFF221644),
                   padding: const EdgeInsets.only(left: 15.0),
                   alignment: Platform.isMacOS
                       ? Alignment.center
