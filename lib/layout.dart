@@ -20,6 +20,7 @@ class Layout extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FKNavigationRail(),
+              VerticalDivider(),
               ModulePage()
             ],
           ),
