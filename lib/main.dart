@@ -28,7 +28,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  final FKTheme initialTheme = const FKDarkTheme();
+  final FKTheme initialTheme = const FKLightTheme();
 
   @override
   Widget build(BuildContext context) {

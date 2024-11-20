@@ -1,9 +1,9 @@
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 
-class FKDarkTheme implements FKTheme {
+class FKLightTheme implements FKTheme {
   
-  const FKDarkTheme();
+  const FKLightTheme();
 
   @override
   ThemeData get themeData => ThemeData();
