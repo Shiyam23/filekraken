@@ -90,6 +90,7 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
                     DataColumn(label: Text("Name")),
                     DataColumn(label: Text("Identifier")),
                     DataColumn(label: Text("Description")),
+                    DataColumn(label: Text("")),
                   ],
                   rows: variableList.map((e) {
                     bool isPredefined =
