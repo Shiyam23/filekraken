@@ -7,37 +7,6 @@ class FKLightTheme implements FKTheme {
 
   @override
   ThemeData get themeData => ThemeData();
-  
-
-  // Navigation Bar Settings
-  @override
-  Color get navBarBackgroundColor => const Color(0xFF18212B);
-
-  // Selected Item Settings
-  @override
-  TextStyle get navBarSelectedTextStyle => const TextStyle(
-    inherit: true,
-    color: Colors.blue,
-    fontWeight: FontWeight.w500
-  );
-
-  @override
-  IconThemeData get navBarSelectedIconStyle => const IconThemeData(
-    color: Colors.blue,
-  );
-
-  // Unselected Item Settings
- @override
-  TextStyle get navBarUnselectedTextStyle => const TextStyle(
-    inherit: true,
-    color: Colors.white,
-    fontWeight: FontWeight.w500
-  );
-
-  @override
-  IconThemeData get navBarUnselectedIconStyle => const IconThemeData(
-    color: Colors.white,
-  );
 
   // Titlebar Settings
   @override
@@ -59,4 +28,10 @@ class FKLightTheme implements FKTheme {
     mouseOver: const Color.fromARGB(255, 42, 58, 77),
     mouseDown: const Color.fromARGB(255, 57, 79, 105),
   );
+
+  @override
+  Color get selectedNavItemColor => const Color(0xFF67DADF);
+
+  @override
+  Color get navItemTextColor => const Color(0xFF1B1D21);
 }

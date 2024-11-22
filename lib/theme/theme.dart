@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 export 'package:flutter/src/material/theme_data.dart';
 export 'package:bitsdojo_window/bitsdojo_window.dart';
 
-
 abstract class FKTheme{
   
   ThemeData get themeData;
@@ -12,12 +11,9 @@ abstract class FKTheme{
   WindowButtonColors get windowButtonColors;
   WindowButtonColors get closeButtonColors;
 
-  // Navigation Bar Settings
-  Color get navBarBackgroundColor;
-  TextStyle get navBarSelectedTextStyle;
-  IconThemeData get navBarSelectedIconStyle;
-  TextStyle get navBarUnselectedTextStyle;
-  IconThemeData get navBarUnselectedIconStyle;
+  // Navigation rail
+  Color get selectedNavItemColor;
+  Color get navItemTextColor;
 }
 
 class FKThemeWidget extends InheritedWidget {

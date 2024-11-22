@@ -79,7 +79,6 @@ class TitleBarMenuButton extends ConsumerWidget {
                 reverseTransitionDuration: Duration.zero,
                 transitionDuration: Duration.zero,
                 pageBuilder: (context, a, aa) => route));
-            ref.read(navigationRailSelectedIndexProvider.notifier).state = null;
           }),
     );
   }

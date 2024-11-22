@@ -1,71 +1,120 @@
-import 'package:filekraken/components/module_page.dart';
-import 'package:filekraken/layout.dart';
-import 'package:filekraken/pages/pages.dart';
-import 'package:filekraken/service/file_read_op.dart';
+import 'dart:io';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-StateProvider<int?> navigationRailSelectedIndexProvider =
-    StateProvider((ref) => 0);
+enum Page { extract, insert, create, rename, variables, history }
 
-class FKNavigationRail extends ConsumerStatefulWidget {
+final activePageProvider = StateProvider<Page>((ref) => Page.extract);
+const logoFilePath = "img/logsdsdo.jpg";
+
+class FKNavigationRail extends StatelessWidget {
   const FKNavigationRail({super.key});
 
   @override
-  ConsumerState<FKNavigationRail> createState() => _FKNavigationRailState();
+  Widget build(BuildContext context) {
+    return Container(
+      width: 250,
+      padding: const EdgeInsets.all(5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Image(
+            image: AssetImage("images/logo.png"),
+          ),
+          NavigationMenuItem(
+              onPressed: () => {},
+              leadingIcon: const Icon(Icons.drive_folder_upload_rounded),
+              title: "Extract Files",
+              page: Page.extract),
+          NavigationMenuItem(
+              title: "Insert Files",
+              leadingIcon: const Icon(Icons.drive_file_move_rounded),
+              onPressed: () => {},
+              page: Page.insert),
+          NavigationMenuItem(
+              title: "Create Files",
+              leadingIcon: const Icon(Icons.file_copy),
+              onPressed: () => {},
+              page: Page.create),
+          NavigationMenuItem(
+              onPressed: () => {},
+              leadingIcon: const Icon(Icons.edit_document),
+              title: "Rename Files",
+              page: Page.rename),
+          const Divider(),
+          NavigationMenuItem(
+              onPressed: () => {},
+              leadingIcon: const Icon(Icons.abc),
+              title: "Variables",
+              page: Page.variables),
+          NavigationMenuItem(
+              onPressed: () => {},
+              leadingIcon: const Icon(Icons.history),
+              title: "History",
+              page: Page.history),
+        ],
+      ),
+    );
+  }
 }
 
-class _FKNavigationRailState extends ConsumerState<FKNavigationRail> {
-  bool extended = false;
+class NavigationMenuItem extends ConsumerStatefulWidget {
+  const NavigationMenuItem(
+      {super.key,
+      required this.onPressed,
+      required this.title,
+      required this.leadingIcon,
+      required this.page});
 
+  final void Function() onPressed;
+  final String title;
+  final Icon leadingIcon;
+  final Page page;
+
+  @override
+  ConsumerState<NavigationMenuItem> createState() => _NavigationMenuItemState();
+}
+
+class _NavigationMenuItemState extends ConsumerState<NavigationMenuItem> {
   @override
   Widget build(BuildContext context) {
     FKTheme theme = FKThemeWidget.of(context)!.theme;
-    return NavigationRail(
-      backgroundColor: theme.navBarBackgroundColor,
-      extended: true,
-      selectedLabelTextStyle: theme.navBarSelectedTextStyle,
-      selectedIconTheme: theme.navBarSelectedIconStyle,
-      unselectedLabelTextStyle: theme.navBarUnselectedTextStyle,
-      unselectedIconTheme: theme.navBarUnselectedIconStyle,
-      selectedIndex: ref.watch(navigationRailSelectedIndexProvider),
-      minWidth: 60,
-      minExtendedWidth: 200,
-      destinations: const [
-        NavigationRailDestination(
-          padding: EdgeInsets.all(0),
-          icon: Icon(Icons.drive_folder_upload_rounded),
-          label: Text("Extract"),
-        ),
-        NavigationRailDestination(
-            icon: Icon(Icons.drive_file_move_rounded), label: Text("Insert")),
-        NavigationRailDestination(
-            icon: Icon(Icons.file_copy), label: Text("Create")),
-        NavigationRailDestination(
-          icon: Icon(Icons.edit_document),
-          label: Text("Rename"),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.abc),
-          label: Text("Variables"),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.history),
-          label: Text("History"),
-        ),
-      ],
-      onDestinationSelected: (value) => setState(() {
-        final selectedIndexNotifier =
-            ref.read(navigationRailSelectedIndexProvider.notifier);
-        if (value != selectedIndexNotifier.state) {
-          ref.read(navigatorProvider).currentState?.pushReplacementNamed(
-              ref.read(pageProvider).keys.toList()[value]);
-          ref.read(fileListStateProvider.notifier).reset();
-          ref.read(directoryListStateProvider.notifier).reset();
-          selectedIndexNotifier.state = value;
-        }
-      }),
+    var active = ref.watch(activePageProvider) == widget.page;
+    return SizedBox(
+      width: 225,
+      child: MenuItemButton(
+          onPressed: () {
+            widget.onPressed.call();
+            ref.read(activePageProvider.notifier).state = widget.page;
+          },
+          style: MenuItemButton.styleFrom(
+              padding: const EdgeInsets.all(20),
+              overlayColor: active ? null : theme.selectedNavItemColor,
+              backgroundColor: active ? theme.selectedNavItemColor : null,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12))),
+          leadingIcon: widget.leadingIcon,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 5.0),
+            child: Text(
+              widget.title,
+              style: TextStyle(
+                color: theme.navItemTextColor,
+                fontFamily: "Inter",
+                fontWeight: FontWeight.w500 
+              ),
+            ),
+          )),
     );
+  }
+}
+
+class NavigationItem extends StatelessWidget {
+  const NavigationItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }

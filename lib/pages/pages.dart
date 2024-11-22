@@ -1,3 +1,4 @@
+import "package:filekraken/components/navigation_rail.dart" as nav;
 import "package:filekraken/components/titlebar/history_widget.dart";
 import "package:filekraken/components/titlebar/variable_widget.dart";
 import "package:filekraken/pages/create_page.dart";
@@ -7,22 +8,20 @@ import "package:filekraken/pages/rename_page.dart";
 import "package:flutter/material.dart";
 import "package:riverpod/riverpod.dart";
 
-enum MainPage {
-  extract,
-  insert,
-  create,
-  rename,
-  variables,
-  history
-}
-
-Map<String, Widget> pages = {
-  MainPage.extract.toString() : const ExtractPage(),
-  MainPage.insert.toString(): const InsertPage(),
-  MainPage.create.toString(): const CreatePage(),
-  MainPage.rename.toString(): const RenamePage(),
-  MainPage.variables.toString(): const VariableListWidget(),
-  MainPage.history.toString(): const HistoryWidget()
-};
-
-Provider<Map<String, Widget>> pageProvider = Provider((ref) => pages);
+Provider<Widget> pageProvider = Provider((ref) {
+  var activePage = ref.watch(nav.activePageProvider);
+  switch (activePage) {
+    case nav.Page.extract:
+      return const ExtractPage();
+    case nav.Page.insert:
+      return const InsertPage();
+    case nav.Page.create:
+      return const CreatePage();
+    case nav.Page.rename:
+      return const RenamePage();
+    case nav.Page.variables:
+      return const VariableListWidget();
+    case nav.Page.history:
+      return const HistoryWidget();
+    }
+});

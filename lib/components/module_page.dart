@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:filekraken/components/unit.dart';
-import 'package:filekraken/layout.dart';
 import 'package:filekraken/model/file_content.dart';
 import 'package:filekraken/pages/pages.dart';
 import 'package:filekraken/service/file_read_op.dart';
@@ -17,33 +16,20 @@ typedef OnFilterModeChange = void Function(FilterMode filterMode);
 
 Provider<GlobalKey<NavigatorState>> navigatorProvider = Provider((_) => GlobalKey<NavigatorState>());
 
-class ModulePage extends ConsumerWidget {
+class ModulePage extends ConsumerStatefulWidget {
   
   const ModulePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    double titleBarHeight = ref.watch(titlebarHeightProvider);
+  ConsumerState<ModulePage> createState() => _ModulePageState();
+}
+
+class _ModulePageState extends ConsumerState<ModulePage> {
+  @override
+  Widget build(BuildContext context) {
+    var page = ref.watch(pageProvider);
     return Expanded(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height - titleBarHeight,
-        child: Navigator(
-          key: ref.watch(navigatorProvider),
-          initialRoute: MainPage.extract.toString(),
-          onGenerateRoute: (settings) {
-            Widget? module = ref.read(pageProvider)[settings.name!];
-            if (module == null) {
-              throw ArgumentError("Unknown operation type");
-            }
-            return PageRouteBuilder(
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, __, ___) => module,
-              settings: settings
-            );
-          },
-        ),
-      ),
+      child: page,
     );
   }
 }
