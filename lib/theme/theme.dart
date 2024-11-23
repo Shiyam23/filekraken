@@ -13,7 +13,10 @@ abstract class FKTheme{
 
   // Navigation rail
   Color get selectedNavItemColor;
-  Color get navItemTextColor;
+  Color get selectedNavItemTextColor;
+  Color get unselectedNavItemTextColor;
+  Color get selectedNavItemIconColor;
+  Color get unselectedNavItemIconColor;
 }
 
 class FKThemeWidget extends InheritedWidget {

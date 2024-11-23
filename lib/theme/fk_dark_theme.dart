@@ -33,5 +33,14 @@ class FKLightTheme implements FKTheme {
   Color get selectedNavItemColor => const Color(0xFF67DADF);
 
   @override
-  Color get navItemTextColor => const Color(0xFF1B1D21);
+  Color get selectedNavItemTextColor => const Color(0xFF1B1D21);
+
+  @override
+  Color get unselectedNavItemTextColor => const Color(0xFF808191);
+
+  @override
+  Color get selectedNavItemIconColor => const Color(0xFF1B1D21);
+
+  @override
+  Color get unselectedNavItemIconColor => const Color(0xFF808191);
 }

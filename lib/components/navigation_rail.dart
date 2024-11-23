@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:filekraken/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,6 +88,7 @@ class _NavigationMenuItemState extends ConsumerState<NavigationMenuItem> {
             ref.read(activePageProvider.notifier).state = widget.page;
           },
           style: MenuItemButton.styleFrom(
+              iconColor: active ? theme.selectedNavItemIconColor : theme.unselectedNavItemIconColor,
               padding: const EdgeInsets.all(20),
               overlayColor: active ? null : theme.selectedNavItemColor,
               backgroundColor: active ? theme.selectedNavItemColor : null,
@@ -100,7 +100,7 @@ class _NavigationMenuItemState extends ConsumerState<NavigationMenuItem> {
             child: Text(
               widget.title,
               style: TextStyle(
-                color: theme.navItemTextColor,
+                color: active ? theme.selectedNavItemTextColor : theme.unselectedNavItemTextColor,
                 fontFamily: "Inter",
                 fontWeight: FontWeight.w500 
               ),
