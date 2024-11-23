@@ -78,7 +78,7 @@ class NavigationMenuItem extends ConsumerStatefulWidget {
 class _NavigationMenuItemState extends ConsumerState<NavigationMenuItem> {
   @override
   Widget build(BuildContext context) {
-    FKTheme theme = FKThemeWidget.of(context)!.theme;
+    FKTheme theme = InheritedFKTheme.of(context)!.theme;
     var active = ref.watch(activePageProvider) == widget.page;
     return SizedBox(
       width: 225,

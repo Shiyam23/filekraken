@@ -33,8 +33,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: FKThemeWidget(
-        initialTheme: initialTheme,
+      child: InheritedFKTheme(
+        theme: initialTheme,
         child: Builder(
           builder: (context) {
             return MaterialApp(

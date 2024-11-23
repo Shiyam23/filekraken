@@ -19,30 +19,22 @@ abstract class FKTheme{
   Color get unselectedNavItemIconColor;
 }
 
-class FKThemeWidget extends InheritedWidget {
+class InheritedFKTheme extends InheritedWidget {
 
-  FKThemeWidget({
+  const InheritedFKTheme({
     super.key, 
     required Widget child,
-    required this.initialTheme
+    required this.theme
   }) : super(child: child);
 
-  final FKTheme initialTheme;
-  late final FKThemeContainer _themeContainer = FKThemeContainer(theme: initialTheme);
-  FKTheme get theme => _themeContainer.theme;
+  final FKTheme theme;
 
-  static FKThemeWidget? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<FKThemeWidget>();
+  static InheritedFKTheme? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<InheritedFKTheme>();
   }
 
   @override
-  bool updateShouldNotify(FKThemeWidget oldWidget) {
-    return _themeContainer.theme != oldWidget._themeContainer.theme;
+  bool updateShouldNotify(InheritedFKTheme oldWidget) {
+    return oldWidget.theme != theme;
   }
-}
-
-class FKThemeContainer {
-
-  FKTheme theme;
-  FKThemeContainer({required this.theme});
 }

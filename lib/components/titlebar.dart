@@ -10,7 +10,7 @@ class TitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FKTheme theme = FKThemeWidget.of(context)!.theme;
+    FKTheme theme = InheritedFKTheme.of(context)!.theme;
     return SizedBox(
       child: WindowTitleBarBox(
         child: ColoredBox(
