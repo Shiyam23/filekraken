@@ -135,17 +135,13 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
     if (e is! ListVariable) {
       throw ArgumentError.value(e, "e", "e is not a ListVariable");
     }
-    ListVariableData? result =
-        await ref.read(navigatorProvider).currentState?.push(
-              DialogRoute(
-                  context: context,
-                  builder: (context) => ListVariableEdit(
-                        initialName: e.name,
-                        initialIdentifier: e.identifier,
-                        initialContent: e.content,
-                        initialLoop: e.loop,
-                      )),
-            );
+    ListVariableData? result = await showDialog(
+        context: context,
+        builder: (_) => ListVariableEdit(
+            initialName: e.name,
+            initialIdentifier: e.identifier,
+            initialContent: e.content,
+            initialLoop: e.loop));
     if (result != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.modify(e, result);
@@ -153,11 +149,8 @@ class _VariableListWidgetState extends ConsumerState<VariableListWidget> {
   }
 
   void addVariable(BuildContext context) async {
-    ListVariableData? newVariable = await ref
-        .read(navigatorProvider)
-        .currentState
-        ?.push(DialogRoute(
-            context: context, builder: (_) => const ListVariableEdit()));
+    ListVariableData? newVariable = await showDialog(
+        context: context, builder: (_) => const ListVariableEdit());
     if (newVariable != null) {
       VariableListNotifier notifier = ref.read(variableListProvider.notifier);
       notifier.addVariable(newVariable);
