@@ -80,8 +80,10 @@ class _NavigationMenuItemState extends ConsumerState<NavigationMenuItem> {
   Widget build(BuildContext context) {
     FKTheme theme = InheritedFKTheme.of(context)!.theme;
     var active = ref.watch(activePageProvider) == widget.page;
-    return SizedBox(
+    return Container(
       width: 225,
+      height: 50,
+      margin: const EdgeInsets.only(bottom: 10),
       child: MenuItemButton(
           onPressed: () {
             widget.onPressed.call();
