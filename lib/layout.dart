@@ -4,8 +4,6 @@ import 'package:filekraken/components/titlebar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'components/module_page.dart';
 
-Provider<double> titlebarHeightProvider = Provider((_) => 28);
-
 class Layout extends ConsumerWidget {
   
   const Layout({super.key});
