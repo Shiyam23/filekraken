@@ -10,10 +10,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ProviderContainer container = ProviderContainer();
   await initializeDateFormatting('de_DE', null);
-  runApp(UncontrolledProviderScope(
-    container: container,
-    child: const MyApp(),
-  ));
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
+    ),
+  );
   container.read(database).init();
 
   doWhenWindowReady(() {
@@ -42,11 +44,9 @@ class MyApp extends StatelessWidget {
               theme: initialTheme.themeData,
               restorationScopeId: "filekraken",
               debugShowCheckedModeBanner: false,
-              home: const Scaffold(
-                body: Layout()
-              )
+              home: const Scaffold(body: Layout()),
             );
-          }
+          },
         ),
       ),
     );
